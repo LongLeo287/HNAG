@@ -1,0 +1,62 @@
+import { z } from "zod";
+import { CandidateItemSchema } from "@/data/catalog";
+import { DEFAULT_LANDMARK_ID, LANDMARK_IDS } from "@/data/backgrounds";
+import { DEFAULT_REVEAL_THEME_ID, REVEAL_THEME_IDS } from "@/data/revealThemes";
+
+// RS-054/FEAT-051: versioned local preferences. Bump SCHEMA_VERSION and add a migration
+// in storage.ts whenever this shape changes — never silently drop a user's saved pool.
+export const SCHEMA_VERSION = 1;
+
+export const FiltersSchema = z.object({
+  kind: z.enum(["FOOD", "DRINK"]),
+  categoryIds: z.array(z.string()),
+  vegetarianOnly: z.boolean(),
+  budgetMode: z.enum(["NONE", "HARD_MAX", "TARGET"]),
+  maxBudgetVnd: z.number().int().positive().optional(),
+  targetBudgetVnd: z.number().int().positive().optional(),
+});
+export type PersistedFilters = z.infer<typeof FiltersSchema>;
+
+export const PreferencesSchema = z.object({
+  version: z.literal(SCHEMA_VERSION),
+  soundEnabled: z.boolean(),
+  filters: FiltersSchema,
+  disabledBuiltInIds: z.array(z.string()),
+  customItems: z.array(CandidateItemSchema),
+  // Purely cosmetic backdrop choice (user request 2026-09-11) — additive/defaulted field, so
+  // preferences saved before this existed still parse without a version bump.
+  backgroundId: z.enum(LANDMARK_IDS).default(DEFAULT_LANDMARK_ID),
+  // Which RevealTheme (case-reel/blindbox/wheel/slot-machine/card-flip) OPEN uses — additive.
+  revealThemeId: z.enum(REVEAL_THEME_IDS).default(DEFAULT_REVEAL_THEME_ID),
+  // Follow OS by default; explicit in-app choices may override it.
+  reducedMotionOverride: z.boolean().nullable().default(null),
+  // Contextual smart preferences (User request: Meal time, weather, day of week, location)
+  contextLocation: z.string().default("ALL"),
+  contextWeather: z.enum(["AUTO", "SUNNY_HOT", "RAINY_COOL", "MILD"]).default("AUTO"),
+  contextMealTime: z.enum(["AUTO", "BREAKFAST", "LUNCH", "AFTERNOON", "DINNER", "LATE_NIGHT", "ALL"]).default("AUTO"),
+  contextDayType: z.enum(["AUTO", "WEEKDAY", "WEEKEND"]).default("AUTO"),
+  contextAutoSyncTime: z.boolean().default(true),
+});
+export type Preferences = z.infer<typeof PreferencesSchema>;
+
+export const DEFAULT_PREFERENCES: Preferences = {
+  version: SCHEMA_VERSION,
+  // DS-024: default sound OFF until the user opts in via an explicit OPEN interaction.
+  soundEnabled: false,
+  filters: {
+    kind: "FOOD",
+    categoryIds: [],
+    vegetarianOnly: false,
+    budgetMode: "NONE",
+  },
+  disabledBuiltInIds: [],
+  customItems: [],
+  backgroundId: DEFAULT_LANDMARK_ID,
+  revealThemeId: DEFAULT_REVEAL_THEME_ID,
+  reducedMotionOverride: null,
+  contextLocation: "ALL",
+  contextWeather: "AUTO",
+  contextMealTime: "AUTO",
+  contextDayType: "AUTO",
+  contextAutoSyncTime: true,
+};

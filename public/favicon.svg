@@ -1,0 +1,14 @@
+<!--
+  BR-010/BR-037: temporary placeholder favicon only — "Claude Code may use temporary text
+  wordmark + simple placeholder icon until final logo asset is user-approved." This is a
+  minimal geometric bowl-rim-forms-the-"?" mark (BR-004 concept A), monochrome-first (BR-009),
+  not a final approved brand asset. Replace once a real logo is chosen (see 20_BRAND_LOGO).
+-->
+<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#fff8ee"/>
+  <path d="M10 9 C10 5 14 3 18 4.5 C22 6 22.5 10.5 18.5 12.5 C16 13.8 15 15.5 15 18"
+        fill="none" stroke="#201a17" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 23 L23 23 L20.5 27.5 C19.5 28.6 15.5 28.6 14.5 27.5 Z" fill="#e4472e"/>
+  <ellipse cx="15.5" cy="23" rx="7.5" ry="2.1" fill="#f5b82e" stroke="#201a17" stroke-width="1"/>
+  <circle cx="15" cy="22" r="1.6" fill="#201a17"/>
+</svg>
