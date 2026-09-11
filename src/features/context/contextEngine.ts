@@ -43,6 +43,15 @@ export function detectDayType(date: Date = new Date()): ResolvedDayType {
   return "WEEKDAY";
 }
 
+/** Pure weather detection: Day hours (09:00 - 17:00) are sunny/warm, evenings and nights are cooler */
+export function detectWeather(date: Date = new Date()): ResolvedWeather {
+  const hours = date.getHours();
+  if (hours >= 9 && hours < 17) {
+    return "SUNNY_HOT";
+  }
+  return "RAINY_COOL";
+}
+
 export function resolveContext(filters: ContextFilters, now: Date = new Date()): ResolvedContext {
   const isAuto = filters.mealTime === "AUTO" || filters.dayType === "AUTO" || filters.weather === "AUTO";
 
@@ -55,7 +64,7 @@ export function resolveContext(filters: ContextFilters, now: Date = new Date()):
     filters.dayType === "AUTO" ? detectDayType(now) : filters.dayType;
 
   const resolvedWeather: ResolvedWeather =
-    filters.weather === "AUTO" ? "SUNNY_HOT" : filters.weather;
+    filters.weather === "AUTO" ? detectWeather(now) : filters.weather;
 
   return {
     mealTime: resolvedMealTime,

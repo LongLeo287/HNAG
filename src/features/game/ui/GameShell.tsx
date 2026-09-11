@@ -61,16 +61,8 @@ export function GameShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [poolPreviewOpen, setPoolPreviewOpen] = useState(false);
 
-  // Smart Context Hook (Location, Meal time, Weather, Day of week)
-  const {
-    filters: contextFilters,
-    resolvedContext,
-    setMealTime,
-    setWeather,
-    setDayType,
-    setLocation,
-    resetContext,
-  } = useSmartContext();
+  // Smart Context Hook (Location, Meal time, Weather, Day of week - 100% automatic)
+  const { resolvedContext } = useSmartContext();
 
   // CS:GO Case selection state
   const [selectedCrateId, setSelectedCrateId] = useState<CrateId>(() => {
@@ -218,17 +210,10 @@ export function GameShell() {
         {/* Hero Title */}
         <HNAGHero />
 
-        {/* Smart Context Filter Bar (Location, Meal Time, Weather, Day) */}
+        {/* Smart Context Indicator: 100% tự động nhận diện theo giờ thực, thời tiết & ngày */}
         <SmartContextBar
-          filters={contextFilters}
           resolvedContext={resolvedContext}
           matchedCount={currentEligiblePool.length}
-          disabled={game.phase === "spinning"}
-          onMealTimeChange={setMealTime}
-          onWeatherChange={setWeather}
-          onDayTypeChange={setDayType}
-          onLocationChange={setLocation}
-          onResetContext={resetContext}
         />
 
         {!storageAvailable && (
