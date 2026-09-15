@@ -17,7 +17,8 @@ test.describe("#HNAG core game loop", () => {
     await page.getByRole("button", { name: /chốt món/i }).click();
     await expect(page.getByRole("button", { name: /mở hộp/i })).toBeVisible();
 
-    const externalRequests = requests.filter((url) => !url.startsWith("http://localhost"));
+    const appOrigin = new URL(page.url()).origin;
+    const externalRequests = requests.filter((url) => new URL(url).origin !== appOrigin);
     expect(externalRequests, `unexpected external network calls: ${externalRequests.join(", ")}`).toEqual([]);
   });
 

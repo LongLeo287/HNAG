@@ -37,12 +37,12 @@ describe("targetWeight (RANK-013)", () => {
 });
 
 describe("computeWeights (RANK-011/014)", () => {
-  it("PURE_RANDOM (NONE/HARD_MAX) assigns equal weight=1 to every eligible item", () => {
+  it("NONE/HARD_MAX assigns equal probabilities to eligible items of the same tier", () => {
     const pool = [makeItem({ priceVnd: 20000 }), makeItem({ priceVnd: 200000 })];
-    expect(computeWeights(pool, makeContext({ budgetMode: "NONE" }))).toEqual([1, 1]);
+    expect(computeWeights(pool, makeContext({ budgetMode: "NONE" }))).toEqual([0.5, 0.5]);
     expect(
       computeWeights(pool, makeContext({ budgetMode: "HARD_MAX", maxBudgetVnd: 500000 })),
-    ).toEqual([1, 1]);
+    ).toEqual([0.5, 0.5]);
   });
 
   it("CUSTOM_FAIR: origin never changes computed weight when other fields match", () => {

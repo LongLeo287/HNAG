@@ -24,8 +24,12 @@ export function ReelItemCard({ item, isWinner }: ReelItemCardProps) {
 
   return (
     <div
+      data-specialty-region={item.regionalSpecialty?.region}
+      data-item-kind={item.kind}
+      data-category-id={item.categoryId}
       className={cx(
         "group relative flex h-48 w-36 shrink-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#151c24] shadow-lg transition-transform",
+        item.regionalSpecialty && "specialty-card",
         isWinner
           ? "ring-2 ring-gold-400 ring-offset-2 ring-offset-black shadow-[0_0_28px_rgba(245,184,46,0.7)] scale-[1.02]"
           : "hover:border-white/20",
@@ -63,7 +67,7 @@ export function ReelItemCard({ item, isWinner }: ReelItemCardProps) {
           {item.name}
         </span>
         <span className="block truncate text-center text-[10px] text-ink-500">
-          {categoryName}
+          {item.regionalSpecialty ? `✦ ${item.regionalSpecialty.locality}` : categoryName}
         </span>
       </div>
 

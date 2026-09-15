@@ -334,3 +334,12 @@
   transition: visibility 0s linear 0s;
 }
 
+/* Regional treatment is independent of the rarity stripe. Original ornamental CSS. */
+.specialty-card { --specialty-accent: #5eead4; border-color: var(--specialty-accent); background-image: repeating-linear-gradient(135deg, transparent 0 18px, #ffffff06 18px 19px); box-shadow: inset 0 0 24px #ffffff08; }
+.specialty-card[data-specialty-region="NORTH"] { --specialty-accent: #fcd34d; }
+.specialty-card[data-specialty-region="CENTRAL"] { --specialty-accent: #5eead4; }
+.specialty-card[data-specialty-region="SOUTH"] { --specialty-accent: #f9a8d4; }
+.specialty-seal { color: var(--specialty-accent); border-color: var(--specialty-accent); background: #ffffff05; }
+.specialty-reveal { animation: specialty-arrive 700ms ease-out both; }
+@keyframes specialty-arrive { from { opacity: 0; transform: translateY(8px) scale(.97); box-shadow: inset 0 0 60px #ffffff20; } to { opacity: 1; transform: none; box-shadow: inset 0 0 24px #ffffff08; } }
+@media (prefers-reduced-motion: reduce) { .specialty-reveal { animation: none; } }

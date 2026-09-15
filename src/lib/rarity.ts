@@ -1,9 +1,7 @@
-import type { RarityTier } from "@/data/catalog";
+import { RARITY_LABEL, type RarityTier } from "@/data/catalog";
 
 /**
- * DS-045/RANK-029: presentation-only tier tokens.
- * Evoking CS:GO weapon crate & truanayangi.com card styles:
- * Steel (Thường) -> Blue (Hiếm) -> Purple (Cực Phẩm) -> Gold (Đặc Biệt).
+ * Shared visual tokens for v2 drop-frequency tiers; never a food quality ranking.
  */
 export const RARITY_STYLE: Record<
   RarityTier,
@@ -23,7 +21,7 @@ export const RARITY_STYLE: Record<
     glowClass: "",
     glyph: "●",
     textClass: "text-steel-400",
-    label: "THƯỜNG",
+    label: RARITY_LABEL.THUONG,
     bgBadgeClass: "bg-steel-500/20 text-steel-400 border-steel-500/30",
   },
   NGON: {
@@ -32,7 +30,7 @@ export const RARITY_STYLE: Record<
     glowClass: "shadow-[0_0_14px_-2px_theme(colors.rare.400)]",
     glyph: "◆",
     textClass: "text-rare-400",
-    label: "★ HIẾM",
+    label: RARITY_LABEL.NGON,
     bgBadgeClass: "bg-rare-500/20 text-rare-400 border-rare-500/30",
   },
   DINH: {
@@ -41,7 +39,7 @@ export const RARITY_STYLE: Record<
     glowClass: "shadow-[0_0_18px_-2px_theme(colors.epic.400)]",
     glyph: "★",
     textClass: "text-epic-400",
-    label: "★ TÍM",
+    label: RARITY_LABEL.DINH,
     bgBadgeClass: "bg-epic-500/20 text-epic-400 border-epic-500/30",
   },
   HUYEN_THOAI: {
@@ -50,7 +48,7 @@ export const RARITY_STYLE: Record<
     glowClass: "shadow-[0_0_28px_-2px_theme(colors.gold.400)]",
     glyph: "✦",
     textClass: "text-gold-400",
-    label: "★ ĐẶC BIỆT",
+    label: RARITY_LABEL.HUYEN_THOAI,
     bgBadgeClass: "bg-gold-500/20 text-gold-400 border-gold-500/30",
   },
 };

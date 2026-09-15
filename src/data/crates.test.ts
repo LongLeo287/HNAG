@@ -3,8 +3,9 @@ import { CRATES, getCrateById, filterItemsForCrate, DEFAULT_CRATE_ID } from "./c
 import { BUNDLED_CATALOG } from "./catalog";
 
 describe("CRATES definition catalog", () => {
-  it("defines exactly 5 CS:GO crates", () => {
-    expect(CRATES).toHaveLength(5);
+  it("defines four food crates and two separate drink crates", () => {
+    expect(CRATES.filter((crate) => crate.filter.kind === "FOOD")).toHaveLength(4);
+    expect(CRATES.filter((crate) => crate.filter.kind === "DRINK")).toHaveLength(2);
   });
 
   it("has valid default crate", () => {

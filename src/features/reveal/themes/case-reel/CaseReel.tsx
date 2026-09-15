@@ -21,7 +21,7 @@ export function CaseReel({ frozenSelection, decoyPool, durationMs, onTick, onLan
   const cardRef = useRef<HTMLDivElement>(null);
 
   const slots = useMemo(
-    () => buildReelSlots(frozenSelection.winner, decoyPool),
+    () => buildReelSlots(frozenSelection.winner, decoyPool, frozenSelection.probabilities),
     [frozenSelection, decoyPool],
   );
 

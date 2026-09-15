@@ -1,4 +1,4 @@
-import type { FrozenSelection } from "@/features/randomizer/domain";
+import type { DrawOdds, FrozenSelection } from "@/features/randomizer/domain";
 import type { CandidateItem } from "@/data/catalog";
 import type { GameAudio } from "@/features/audio/gameAudio";
 import { CRATES, type CrateDefinition } from "@/data/crates";
@@ -11,6 +11,7 @@ import { createSpinProfile } from "../themes/case-reel/spinProfile";
 interface CrateStageProps {
   phase: "configuring" | "blocked" | "spinning" | "revealed";
   eligiblePool: CandidateItem[];
+  nextDrawOdds?: DrawOdds;
   frozenSelection: FrozenSelection | null;
   reducedMotion: boolean;
   revealThemeId: string;
@@ -30,6 +31,7 @@ interface CrateStageProps {
 export function CrateStage({
   phase,
   eligiblePool,
+  nextDrawOdds,
   frozenSelection,
   reducedMotion,
   revealThemeId,
@@ -58,7 +60,7 @@ export function CrateStage({
 
   useEffect(() => {
     if (phase === "revealed" && frozenSelection) {
-      audio.playReveal(frozenSelection.winner.rarity);
+      audio.playReveal(frozenSelection.winner.rarity, frozenSelection.winner.regionalSpecialty?.region);
     }
   }, [phase, audio, frozenSelection]);
 
@@ -80,7 +82,7 @@ export function CrateStage({
 
       {/* Stage Body - directly host the reel */}
       <div className="relative">
-        {phase === "configuring" && <IdleReel items={eligiblePool} />}
+        {phase === "configuring" && <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} />}
 
         {phase === "spinning" && !reducedMotion && frozenSelection && (
           <RevealThemeRenderer
@@ -108,10 +110,13 @@ export function CrateStage({
 
         {phase === "revealed" && frozenSelection && (
           <>
-            <IdleReel items={eligiblePool} winnerItem={frozenSelection.winner} />
+            <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} winnerItem={frozenSelection.winner} />
             <WinnerModal
               open={modalOpen}
               winner={frozenSelection.winner}
+              reducedMotion={reducedMotion}
+              winningProbability={frozenSelection.probabilities[frozenSelection.eligiblePool.findIndex((item) => item.id === frozenSelection.winner.id)]}
+              respinOdds={nextDrawOdds}
               onAccept={onAccept}
               onRespin={onRespin}
               onEditPool={onEditPool}

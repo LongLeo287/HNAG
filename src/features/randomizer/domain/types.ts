@@ -12,7 +12,7 @@ export interface RandomizerContext {
   budgetMode: BudgetMode;
   maxBudgetVnd?: number;
   targetBudgetVnd?: number;
-  /** RANK-015 re-spin exclusion. Null/undefined on the first spin. */
+  /** v2 re-spin exclusion within a tier. Null/undefined on the first spin. */
   previousWinnerId?: string | null;
 }
 
@@ -31,12 +31,16 @@ export interface FilterDiagnostics {
   blockers: FilterBlockerCode[];
 }
 
-export interface FrozenSelection {
-  /** Bumped only on an incompatible domain-contract change. */
-  algorithmVersion: "randomizer-v1.0.0";
-  winner: CandidateItem;
-  /** Eligible pool at draw time (post re-spin exclusion), stably sorted — used to build reel decoys. */
+export interface DrawOdds {
   eligiblePool: CandidateItem[];
+  /** Actual draw probabilities aligned with eligiblePool; sum to 1 for a nonempty pool. */
+  probabilities: number[];
+}
+
+export interface FrozenSelection extends DrawOdds {
+  /** Bumped only on an incompatible domain-contract change. */
+  algorithmVersion: "randomizer-v2.1.0";
+  winner: CandidateItem;
   context: RandomizerContext;
   frozenAtMs: number;
 }

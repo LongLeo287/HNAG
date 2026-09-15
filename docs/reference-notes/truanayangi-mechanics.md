@@ -1,5 +1,46 @@
 # Reference mechanics notes — truanayangi-com/truanayangi
 
+## App-launch correction: 2026-09-12
+
+The user reported that all delivery buttons opened websites on both iPhone and Android.
+At reference commit `2e10968abfcee2cabc0b01fcf0535ac4aa31b16d`, `src/app/page.tsx`
+uses a GrabFood web search URL with `search`, `support-deeplink=true` and
+`searchParameter`. It contains no equivalent ShopeeFood, Be or Green SM launch mechanism.
+HNAG had omitted Grab's deeplink parameters and used ordinary website links for every provider.
+
+HNAG now uses a direct, gesture-triggered native URL on iOS and a package-scoped Android
+Intent with an explicit Play Store fallback. No timer, hidden iframe, app-install probing,
+provider SDK or automatic order is involved. Desktop links remain HTTPS. A manual install
+link is shown after a mobile attempt; it does not claim the app launch succeeded or failed.
+
+Verified destinations (provider-owned evidence):
+
+| Provider | Native route | Android package | Evidence |
+| --- | --- | --- | --- |
+| GrabFood | `grab://open?screenType=GRABFOOD&searchParameter=...` | `com.grabtaxi.passenger` | [GrabFood](https://food.grab.com/vn/vi/restaurants?support-deeplink=true): its `common-utils.13c5bf4024a08ee849ea.js` bundle uses this search route in its OneLink template. |
+| ShopeeFood | iOS `vn.foody.DeliveryNow://home`; Android `deliverynow://home` | `com.deliverynow` | [ShopeeFood](https://www.shopeefood.vn/): App Links metadata and `ios-app`/`android-app` alternate URLs in `app-2e7c81bf3ba96ea36b53.js`. |
+| Be | `xyz.be.customer://home` | `xyz.be.customer` | [Be homepage](https://be.com.vn/) links to [the customer app landing page](https://begroup.onelink.me/ZOqn/becustomerapp), which publishes this native route. |
+| Xanh SM / Green SM | `xanhsm.com://homepage` | `com.gsm.customer` | [Official download page](https://www.greensm.com/vn-vi/download) links to [the app landing page](https://vn.greensm.com/3eCA/8li1xfm7). Its native route and [Android association](https://vn.greensm.com/.well-known/assetlinks.json) identify the consumer app. |
+| Google Maps | iOS `comgooglemaps://?q=...`; Android HTTPS Maps search with `api=1` in an Intent | `com.google.android.apps.maps` | [Google Maps URLs](https://developers.google.com/maps/documentation/urls/get-started), [iOS scheme](https://developers.google.com/maps/documentation/urls/ios-urlscheme). |
+
+The ShopeeFood, Be and Green SM sources establish app entry points, not public dish-search
+contracts. HNAG therefore offers explicit dish-name copying instead of inventing search
+parameters for those apps. Clipboard failure leaves a selectable name for manual copying.
+
+Validation must distinguish URL construction and browser click handling from installed-app
+launches. Automated mobile tests intercept native navigation on the desktop host; physical
+iPhone/Android app opening is still a device check. In-app browsers and OS link preferences
+can block external-app launches. See [Chrome's Intent requirements](https://developer.chrome.com/docs/android/intents).
+
+Follow-up on 2026-09-14: manual responsive inspection also found that the result card's
+decorative rays extended beyond the scrolling modal. Their horizontal bounds now stay
+inside the card, and the modal aura is capped to its available width. The mobile link
+tests check the modal's own scroll containers at 390px and 320px, since checking only
+the document width had missed this overflow.
+
+Delivery remains an independent local change on `codex/rarity-latest`, alongside the
+rarity improvements. It has not been merged, pushed or deployed to the public Vercel site.
+
 ## Refresh: 2026-09-11
 
 Public `main` was verified at commit `2e10968abfcee2cabc0b01fcf0535ac4aa31b16d`.

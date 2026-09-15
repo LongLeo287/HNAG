@@ -285,6 +285,23 @@ const ART: Record<string, (accent: Accent) => JSX.Element> = {
   ),
 };
 
+ART["banh-mi"] = ART.banh!;
+ART["mon-man"] = ART["lau-nuong"]!;
+ART["nuoc-khac"] = ART["ep-sinh-to"]!;
+ART["trang-mieng"] = ({ a, b }) => <>
+  <CeramicPlate />
+  <path d="M15 29 Q32 51 49 29 Z" fill="#fef3c7" stroke="#cbd5e1" />
+  <ellipse cx="32" cy="29" rx="17" ry="7" fill={a} />
+  <circle cx="25" cy="27" r="4" fill={b} /><circle cx="36" cy="30" r="3" fill="#f9a8d4" />
+  <path d="M41 26 L51 12" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round" />
+</>;
+ART["co-con"] = ({ a }) => <>
+  <ellipse cx="32" cy="55" rx="14" ry="4" fill="#94a3b8" opacity=".6" />
+  <path d="M20 10 L44 10 L42 29 Q32 42 22 29 Z" fill="#ffffff18" stroke="#cbd5e1" strokeWidth="2" />
+  <path d="M22 22 L42 22 L40 29 Q32 37 24 29 Z" fill={a} opacity=".8" />
+  <path d="M32 36 L32 53 M24 54 L40 54" stroke="#cbd5e1" strokeWidth="2" />
+</>;
+
 const DEFAULT_ART = ART.com as (accent: Accent) => JSX.Element;
 
 export function CategoryArt({

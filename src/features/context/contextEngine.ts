@@ -33,23 +33,11 @@ export function detectMealTime(date: Date = new Date()): ResolvedMealTime {
   return "LATE_NIGHT";
 }
 
-/** Pure day detection: Monday-Friday morning is WEEKDAY, Friday evening & weekend is WEEKEND */
+/** Calendar weekdays: Friday remains Friday, including its evening. */
 export function detectDayType(date: Date = new Date()): ResolvedDayType {
   const day = date.getDay(); // 0 = Sunday, 1 = Mon, ..., 5 = Fri, 6 = Sat
-  const hours = date.getHours();
-
   if (day === 0 || day === 6) return "WEEKEND";
-  if (day === 5 && hours >= 17) return "WEEKEND";
   return "WEEKDAY";
-}
-
-/** Pure weather detection: Day hours (09:00 - 17:00) are sunny/warm, evenings and nights are cooler */
-export function detectWeather(date: Date = new Date()): ResolvedWeather {
-  const hours = date.getHours();
-  if (hours >= 9 && hours < 17) {
-    return "SUNNY_HOT";
-  }
-  return "RAINY_COOL";
 }
 
 export function resolveContext(filters: ContextFilters, now: Date = new Date()): ResolvedContext {
@@ -64,7 +52,7 @@ export function resolveContext(filters: ContextFilters, now: Date = new Date()):
     filters.dayType === "AUTO" ? detectDayType(now) : filters.dayType;
 
   const resolvedWeather: ResolvedWeather =
-    filters.weather === "AUTO" ? detectWeather(now) : filters.weather;
+    filters.weather === "AUTO" ? "UNKNOWN" : filters.weather;
 
   return {
     mealTime: resolvedMealTime,
@@ -129,7 +117,7 @@ export function matchesLocation(item: CandidateItem, location: string): boolean 
 }
 
 export function matchesWeather(item: CandidateItem, weather: ResolvedWeather): boolean {
-  if (weather === "MILD") return true;
+  if (weather === "MILD" || weather === "UNKNOWN") return true;
   if (!item.weatherSuitability || item.weatherSuitability === "ANY") return true;
   return item.weatherSuitability === weather;
 }
@@ -139,42 +127,20 @@ export function matchesDayType(item: CandidateItem, dayType: ResolvedDayType): b
   return item.daySuitability === dayType;
 }
 
-/**
- * Robust filter with graceful fallback so the pool is NEVER empty!
- */
+/** An empty intersection stays empty; the UI can explicitly disable suggestion filters. */
 export function filterItemsByContext(items: CandidateItem[], context: ResolvedContext): CandidateItem[] {
-  // Step 1: Strict match
-  let matched = items.filter((item) => {
+  return items.filter((item) => {
     if (!matchesLocation(item, context.location)) return false;
     if (!matchesMealTime(item, context.mealTime)) return false;
     if (!matchesWeather(item, context.weather)) return false;
     return true;
   });
 
-  // Step 2: If pool too small (less than 8 items), relax weather constraint
-  if (matched.length < 8) {
-    matched = items.filter((item) => {
-      if (!matchesLocation(item, context.location)) return false;
-      if (!matchesMealTime(item, context.mealTime)) return false;
-      return true;
-    });
-  }
-
-  // Step 3: If still too small, relax location (include all nation)
-  if (matched.length < 8) {
-    matched = items.filter((item) => {
-      if (!matchesMealTime(item, context.mealTime)) return false;
-      return true;
-    });
-  }
-
-  // Step 4: Ultimate fallback: return original items if nothing matches
-  return matched.length > 0 ? matched : items;
 }
 
 /** Format a high-end contextual badge summary for the header/UI */
 export function formatContextSummary(context: ResolvedContext, count: number): string {
-  const locLabel = context.location === "ALL" ? "Toàn quốc" : context.location;
+  const locLabel = context.location === "ALL" ? "Không lọc xuất xứ món" : context.location;
   const mealLabel =
     context.mealTime === "BREAKFAST"
       ? "Ăn sáng"
@@ -187,7 +153,7 @@ export function formatContextSummary(context: ResolvedContext, count: number): s
       : "Ăn khuya";
   
   const weatherLabel =
-    context.weather === "RAINY_COOL"
+    context.weather === "UNKNOWN" ? "Chưa có dữ liệu thời tiết" : context.weather === "RAINY_COOL"
       ? "Trời mưa / Lạnh 🌧️"
       : context.weather === "SUNNY_HOT"
       ? "Trời nắng ☀️"

@@ -68,7 +68,7 @@ export function CatalogExplorer({ items, onOpenPreferences }: CatalogExplorerPro
 
       <p className="text-xs leading-relaxed text-ink-500">
         Tìm kiếm bên dưới chỉ đổi danh sách xem trước. Bộ lọc phía trên quyết định món được quay.
-        Màu thẻ chỉ là hiệu ứng, không thể hiện chất lượng hay xác suất. Giá và ảnh mang tính minh hoạ.
+        Tỉ lệ thực tế nằm ở bảng phía trên; hạng không đánh giá chất lượng món. Giá tham khảo, ảnh minh hoạ.
       </p>
       {/* Filter & Search Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
@@ -101,8 +101,8 @@ export function CatalogExplorer({ items, onOpenPreferences }: CatalogExplorerPro
         <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 [scrollbar-width:none]">
           {[
             { id: "ALL", label: "Tất cả" },
-            { id: "HUYEN_THOAI", label: "★ Đặc biệt", color: "text-gold-400" },
-            { id: "DINH", label: "★ Tím", color: "text-epic-400" },
+            { id: "HUYEN_THOAI", label: "★ Huyền thoại", color: "text-gold-400" },
+            { id: "DINH", label: "★ Siêu hiếm", color: "text-epic-400" },
             { id: "NGON", label: "★ Hiếm", color: "text-rare-400" },
             { id: "THUONG", label: "Thường", color: "text-steel-400" },
           ].map((tier) => (
@@ -133,7 +133,10 @@ export function CatalogExplorer({ items, onOpenPreferences }: CatalogExplorerPro
           return (
             <div
               key={item.id}
-              className="group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#151c24] transition-all hover:border-white/25 hover:bg-[#1a232e] hover:shadow-xl"
+              data-item-kind={item.kind}
+              data-category-id={item.categoryId}
+              data-specialty-region={item.regionalSpecialty?.region}
+              className={cx("group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#151c24] transition-all hover:border-white/25 hover:bg-[#1a232e] hover:shadow-xl", item.regionalSpecialty && "specialty-card")}
             >
               {/* Top Vegetarian Badge */}
               <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
@@ -160,6 +163,7 @@ export function CatalogExplorer({ items, onOpenPreferences }: CatalogExplorerPro
               {/* Lower Info Section matching Image 2 */}
               <div className="flex flex-1 flex-col justify-between p-3 bg-[#151c24] border-t border-white/5">
                 <div>
+                  {item.regionalSpecialty && <span className="mb-1 block text-[10px] font-bold text-teal-300">✦ Đặc sản · {item.regionalSpecialty.locality}</span>}
                   <span className="block text-[11px] font-medium text-ink-500 mb-0.5">
                     {categoryName}
                   </span>

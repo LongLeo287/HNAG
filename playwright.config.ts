@@ -8,13 +8,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: "list",
   use: {
-    baseURL: "http://localhost:4173",
+    baseURL: "http://127.0.0.1:4188",
     trace: "on-first-retry",
   },
   webServer: {
-    command: "pnpm preview --port 4173",
-    url: "http://localhost:4173",
-    reuseExistingServer: !process.env.CI,
+    command: "pnpm preview --host 127.0.0.1 --port 4188 --strictPort",
+    url: "http://127.0.0.1:4188",
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [

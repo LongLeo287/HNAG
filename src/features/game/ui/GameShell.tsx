@@ -18,6 +18,11 @@ import { RevealThemePicker } from "./RevealThemePicker";
 import { bundledItemsForKind } from "@/data/catalog";
 import { combinePool } from "@/features/pool";
 import { useSmartContext, filterItemsByContext, SmartContextBar } from "@/features/context";
+import { applyHardFilters, applyRespinExclusion, computeWeights, stableSortById } from "@/features/randomizer/domain";
+import { RarityOdds } from "@/components/ui/RarityOdds";
+import { FoodDrinkToggle } from "./FoodDrinkToggle";
+import { eligibleForCrate, filtersForCrate, initialCrateId } from "../crateFilters";
+import { loadPreferences, savePreferences } from "@/lib/local-preferences";
 
 const BLOCKER_MESSAGE: Record<string, string> = {
   NO_CANDIDATES_KIND: "Chưa có món nào cho lựa chọn này.",
@@ -31,11 +36,11 @@ export function GameShell() {
   const {
     game,
     spinCount,
+    previousWinnerId,
     storageAvailable,
     spinError,
     profile,
     combinedPool,
-    eligiblePreviewPool,
     soundEnabled,
     backgroundId,
     revealThemeId,
@@ -61,16 +66,14 @@ export function GameShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [poolPreviewOpen, setPoolPreviewOpen] = useState(false);
 
-  // Smart Context Hook (Location, Meal time, Weather, Day of week - 100% automatic)
-  const { resolvedContext } = useSmartContext();
+  const deviceContext = useSmartContext();
+  const { resolvedContext } = deviceContext;
+  const [useContextSuggestions, setUseContextSuggestions] = useState(true);
 
   // CS:GO Case selection state
   const [selectedCrateId, setSelectedCrateId] = useState<CrateId>(() => {
-    if (game.draftFilters.kind === "DRINK") return "crate_drink";
-    if (game.draftFilters.vegetarianOnly) return "crate_vegetarian";
-    if (game.draftFilters.categoryIds.includes("lau-nuong")) return "crate_drinking";
-    if (game.draftFilters.categoryIds.some((c) => ["an-vat", "banh", "fastfood"].includes(c))) return "crate_snack";
-    return DEFAULT_CRATE_ID;
+    const saved = loadPreferences().selectedCrateId;
+    return saved && getCrateById(saved).filter.kind === game.draftFilters.kind ? saved : initialCrateId(game.draftFilters);
   });
 
   const currentCrate = getCrateById(selectedCrateId);
@@ -87,12 +90,12 @@ export function GameShell() {
 
   // Context-filtered base pools based on Location, Meal Time, Weather, and Day
   const contextFoodPool = useMemo(
-    () => filterItemsByContext(foodPool, resolvedContext),
-    [foodPool, resolvedContext],
+    () => useContextSuggestions ? filterItemsByContext(foodPool, resolvedContext) : foodPool,
+    [foodPool, resolvedContext, useContextSuggestions],
   );
   const contextDrinkPool = useMemo(
-    () => filterItemsByContext(drinkPool, resolvedContext),
-    [drinkPool, resolvedContext],
+    () => useContextSuggestions ? filterItemsByContext(drinkPool, resolvedContext) : drinkPool,
+    [drinkPool, resolvedContext, useContextSuggestions],
   );
 
   // Live counts for each of the 5 crates (under active context)
@@ -100,16 +103,18 @@ export function GameShell() {
     const counts: Record<CrateId, number> = {
       crate_food: 0,
       crate_drink: 0,
+      crate_alcohol: 0,
       crate_snack: 0,
       crate_drinking: 0,
       crate_vegetarian: 0,
     };
     for (const crate of CRATES) {
       const pool = crate.filter.kind === "FOOD" ? contextFoodPool : contextDrinkPool;
-      counts[crate.id] = filterItemsForCrate(pool, crate).length;
+      counts[crate.id] = eligibleForCrate(pool, crate,
+        crate.id === selectedCrateId ? game.draftFilters : filtersForCrate(crate, game.draftFilters)).length;
     }
     return counts;
-  }, [contextFoodPool, contextDrinkPool]);
+  }, [contextFoodPool, contextDrinkPool, game.draftFilters, selectedCrateId]);
 
   // Contextual pool for the currently selected crate
   const activeCratePool = useMemo(() => {
@@ -119,62 +124,44 @@ export function GameShell() {
 
   // Combined eligible pool matching Crate + Context + any active user filters
   const currentEligiblePool = useMemo(() => {
-    let pool = activeCratePool;
-    if (game.draftFilters.categoryIds.length > 0) {
-      pool = pool.filter((i) => game.draftFilters.categoryIds.includes(i.categoryId));
-    }
-    if (game.draftFilters.vegetarianOnly) {
-      pool = pool.filter((i) => i.vegetarianPossible);
-    }
-    if (game.draftFilters.budgetMode === "HARD_MAX" && game.draftFilters.maxBudgetVnd) {
-      const max = game.draftFilters.maxBudgetVnd;
-      pool = pool.filter((i) => i.priceVnd !== null && i.priceVnd <= max);
-    }
-    return pool.length > 0 ? pool : eligiblePreviewPool;
-  }, [activeCratePool, eligiblePreviewPool, game.draftFilters]);
+    return applyHardFilters(activeCratePool, game.draftFilters).eligible;
+  }, [activeCratePool, game.draftFilters]);
 
-  const foodCount = useMemo(() => {
-    return game.draftFilters.vegetarianOnly
-      ? contextFoodPool.filter((i) => i.vegetarianPossible).length
-      : contextFoodPool.length;
-  }, [contextFoodPool, game.draftFilters.vegetarianOnly]);
-
-  const drinkCount = useMemo(() => {
-    return game.draftFilters.vegetarianOnly
-      ? contextDrinkPool.filter((i) => i.vegetarianPossible).length
-      : contextDrinkPool.length;
-  }, [contextDrinkPool, game.draftFilters.vegetarianOnly]);
+  // Match the real draw after crate/context filters and same-tier repeat exclusion.
+  const nextDrawOdds = useMemo(() => {
+    const context = { ...game.draftFilters, previousWinnerId };
+    const { eligible } = applyHardFilters(currentEligiblePool, context);
+    const eligiblePool = stableSortById(applyRespinExclusion(eligible, previousWinnerId));
+    return { eligiblePool, probabilities: computeWeights(eligiblePool, context) };
+  }, [currentEligiblePool, game.draftFilters, previousWinnerId]);
 
   const countsByCategory = useMemo(() => {
-    const currentKindPool = game.draftFilters.kind === "FOOD" ? contextFoodPool : contextDrinkPool;
-    const filteredPool = game.draftFilters.vegetarianOnly
-      ? currentKindPool.filter((i) => i.vegetarianPossible)
-      : currentKindPool;
+    const filteredPool = applyHardFilters(activeCratePool, { ...game.draftFilters, categoryIds: [] }).eligible;
     const counts: Record<string, number> = {};
     for (const item of filteredPool) {
       counts[item.categoryId] = (counts[item.categoryId] ?? 0) + 1;
     }
     return counts;
-  }, [contextFoodPool, contextDrinkPool, game.draftFilters.kind, game.draftFilters.vegetarianOnly]);
+  }, [activeCratePool, game.draftFilters]);
 
   function handleSelectCrate(crateId: CrateId) {
     if (game.phase === "spinning") return;
     audio.recover();
     audio.playEquipCrate();
     setSelectedCrateId(crateId);
+    savePreferences({ ...loadPreferences(), selectedCrateId: crateId });
     const targetCrate = getCrateById(crateId);
-    setFilters({
-      kind: targetCrate.filter.kind,
-      categoryIds: targetCrate.filter.categoryIds,
-      vegetarianOnly: targetCrate.filter.vegetarianOnly,
-    });
+    setFilters(filtersForCrate(targetCrate, game.draftFilters));
+  }
+
+  function handleReset() {
+    deviceContext.disableLocation();
+    setSelectedCrateId(DEFAULT_CRATE_ID);
+    resetAll();
   }
 
   function handleOpen() {
     audio.recover(); // first-gesture unlock, per DS-024.
-    if (!soundEnabled) {
-      setSound(true);
-    }
     audio.playCrateOpen();
     open(currentEligiblePool);
   }
@@ -210,11 +197,16 @@ export function GameShell() {
         {/* Hero Title */}
         <HNAGHero />
 
-        {/* Smart Context Indicator: 100% tự động nhận diện theo giờ thực, thời tiết & ngày */}
+        {/* Device facts remain visible even if suggestion filtering is disabled. */}
         <SmartContextBar
-          resolvedContext={resolvedContext}
+          context={deviceContext}
           matchedCount={currentEligiblePool.length}
         />
+        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs text-ink-700">
+          <input type="checkbox" checked={useContextSuggestions} disabled={game.phase === "spinning"}
+            onChange={(event) => setUseContextSuggestions(event.target.checked)} />
+          Lọc gợi ý theo giờ và thời tiết đã xác định
+        </label>
 
         {!storageAvailable && (
           <p role="status" className="rounded-xl border border-gold-500/40 bg-gold-500/10 p-3 text-sm text-gold-400">
@@ -233,8 +225,15 @@ export function GameShell() {
           }}
         />
 
-        {/* CS:GO Crate Selection Shelf: Pick crate first before spinning! */}
+        <fieldset disabled={game.phase === "spinning"} className="w-full space-y-2 disabled:opacity-60">
+          <legend className="mb-2 text-sm font-semibold text-ink-900">Bạn muốn chọn món ăn hay đồ uống?</legend>
+          <FoodDrinkToggle value={game.draftFilters.kind} onChange={(kind) => {
+            if (kind !== game.draftFilters.kind) handleSelectCrate(kind === "DRINK" ? "crate_drink" : DEFAULT_CRATE_ID);
+          }} />
+        </fieldset>
+
         <CrateSelectorRack
+          kind={game.draftFilters.kind}
           selectedCrateId={selectedCrateId}
           countsByCrate={countsByCrate}
           disabled={game.phase === "spinning"}
@@ -244,7 +243,8 @@ export function GameShell() {
         {/* Central Crate Showcase Stage (CS:GO style case opening) */}
         <CrateStage
           phase={game.phase}
-          eligiblePool={currentEligiblePool}
+          eligiblePool={nextDrawOdds.eligiblePool}
+          nextDrawOdds={nextDrawOdds}
           frozenSelection={game.frozenSelection}
           reducedMotion={reducedMotion}
           revealThemeId={revealThemeId}
@@ -267,13 +267,16 @@ export function GameShell() {
             accentHex={currentCrate.theme.primaryHex}
           />
 
+          <RarityOdds odds={game.phase === "spinning" && game.frozenSelection ? game.frozenSelection : nextDrawOdds} />
+
           <GameControls
+            crate={currentCrate}
             filters={game.draftFilters}
             disabled={game.phase === "spinning"}
-            foodCount={foodCount}
-            drinkCount={drinkCount}
             countsByCategory={countsByCategory}
-            onChange={setFilters}
+            onChange={(patch) => {
+              setFilters(patch);
+            }}
           />
 
           <div className="w-full">
@@ -293,7 +296,7 @@ export function GameShell() {
         </div>
 
         {/* Blocked State Notice */}
-        {(game.phase === "blocked" || (game.phase === "configuring" && eligiblePreviewPool.length === 0)) && (
+        {(game.phase === "blocked" || (game.phase === "configuring" && currentEligiblePool.length === 0)) && (
           <div role="status" className="flex w-full max-w-lg flex-col items-center gap-3 rounded-2xl border border-chili-500/40 bg-chili-500/10 p-6 text-center shadow-lg">
             <span className="text-2xl">⚠️</span>
             <p className="text-sm font-semibold text-white">
@@ -302,7 +305,7 @@ export function GameShell() {
                 : "Không tìm thấy món ăn nào phù hợp với bộ lọc hiện tại."}
             </p>
             <p className="text-xs text-ink-500">
-              Hãy thử nới lỏng ngân sách hoặc bỏ chọn các danh mục để tiếp tục mở hòm.
+              Thử nới ngân sách, bỏ chọn danh mục hoặc tắt lọc gợi ý theo giờ và thời tiết.
             </p>
             <Button
               variant="secondary"
@@ -354,7 +357,7 @@ export function GameShell() {
           reducedMotionOverride={reducedMotionOverride}
           onReducedMotionOverrideChange={setReducedMotionOverride}
           onOpenPreferences={() => setDrawerOpen(true)}
-          onReset={resetAll}
+          onReset={handleReset}
         />
 
         {/* Pool Preferences Drawer */}
@@ -366,7 +369,7 @@ export function GameShell() {
           onToggleBuiltIn={toggleBuiltInItem}
           onAddCustom={addCustom}
           onRemoveCustom={removeCustom}
-          onReset={resetAll}
+          onReset={handleReset}
         />
       </main>
     </div>

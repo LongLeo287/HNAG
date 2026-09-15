@@ -5,6 +5,7 @@ import { easeSpin } from "@/features/reveal/themes/case-reel/easing";
 import { CategoryArt } from "@/components/ui/CategoryArt";
 import { RARITY_STYLE } from "@/lib/rarity";
 import { cx } from "@/lib/cx";
+import { sampleDecoy } from "../case-reel/decoys";
 
 interface SlotMachineRevealProps {
   frozenSelection: FrozenSelection;
@@ -25,11 +26,11 @@ const FINAL_Y_PX = VIEWPORT_HEIGHT_PX / 2 - ITEM_HEIGHT_PX / 2 - WINNER_ROW_INDE
 const COLUMN_DURATIONS_MS = [2600, 3800, 5000];
 
 /** Same shape as case-reel's buildReelSlots (RANK-022) — only WINNER_ROW_INDEX carries meaning. */
-function buildColumnStrip(winner: CandidateItem, decoyPool: CandidateItem[]): CandidateItem[] {
+function buildColumnStrip(winner: CandidateItem, decoyPool: CandidateItem[], probabilities: number[]): CandidateItem[] {
   const pool = decoyPool.length > 0 ? decoyPool : [winner];
   return Array.from({ length: STRIP_LENGTH }, (_, index) => {
     if (index === WINNER_ROW_INDEX) return winner;
-    const decoy = pool[Math.floor(Math.random() * pool.length)];
+    const decoy = sampleDecoy(pool, probabilities);
     return decoy ?? winner;
   });
 }
@@ -119,7 +120,7 @@ function Column({
  */
 export function SlotMachineReveal({ frozenSelection, decoyPool, onTick, onLanded }: SlotMachineRevealProps) {
   const strips = useMemo(
-    () => COLUMN_DURATIONS_MS.map(() => buildColumnStrip(frozenSelection.winner, decoyPool)),
+    () => COLUMN_DURATIONS_MS.map(() => buildColumnStrip(frozenSelection.winner, decoyPool, frozenSelection.probabilities)),
     [frozenSelection, decoyPool],
   );
   const stoppedCountRef = useRef(0);

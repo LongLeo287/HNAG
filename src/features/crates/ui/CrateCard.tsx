@@ -37,7 +37,7 @@ export function CrateCard({
           : "border-white/10 bg-canvas-200/50 hover:bg-canvas-200/85 hover:border-white/20 hover:-translate-y-0.5 hover:shadow-lg backdrop-blur-sm opacity-85 hover:opacity-100"
       } ${disabled ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
       style={{
-        minWidth: "155px",
+        minWidth: 0,
         flex: "1 1 0px",
       }}
     >
@@ -74,9 +74,10 @@ export function CrateCard({
 
       {/* Crate Information: Clean bold title only */}
       <div className="w-full border-t border-white/10 pt-2 pb-0.5 text-center">
-        <span className={`block text-xs sm:text-sm font-black tracking-wide truncate ${isSelected ? theme.textAccentClass : "text-white group-hover:text-gold-300"}`}>
+        <span className={`block text-xs sm:text-sm font-black tracking-wide ${isSelected ? theme.textAccentClass : "text-white group-hover:text-gold-300"}`}>
           {crate.name}
         </span>
+        <span className="mt-1 block text-xs text-ink-500">{itemCount} lựa chọn</span>
       </div>
 
       {/* Downward pointer triangle connecting to CrateStage when active */}

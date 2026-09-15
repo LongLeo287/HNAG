@@ -1,5 +1,6 @@
 import type { CandidateItem } from "@/data/catalog";
 import { REEL_LENGTH, WINNER_SLOT_INDEX } from "./constants";
+import { sampleDecoy } from "./decoys";
 
 export interface ReelGeometry {
   viewportWidthPx: number;
@@ -31,34 +32,24 @@ export function currentSlotIndex(geometry: ReelGeometry, translateXPx: number): 
 
 /**
  * RANK-022: build the visual strip. Only WINNER_SLOT_INDEX carries meaning; every other
- * slot is a cosmetic decoy with no probability weight, so plain Math.random() is fine here —
+ * slot is a cosmetic decoy sampled from the frozen probabilities using Math.random() —
  * this function never selects or influences the winner (CODE-019).
  */
-export function buildReelSlots(winner: CandidateItem, decoyPool: CandidateItem[]): CandidateItem[] {
+export function buildReelSlots(winner: CandidateItem, decoyPool: CandidateItem[], probabilities: number[] = []): CandidateItem[] {
   const pool = decoyPool.length > 0 ? decoyPool : [winner];
   return Array.from({ length: REEL_LENGTH }, (_, index) => {
     if (index === WINNER_SLOT_INDEX) return winner;
-    const decoy = pool[Math.floor(Math.random() * pool.length)];
+    const decoy = sampleDecoy(pool, probabilities);
     return decoy ?? winner;
   });
 }
 
-/** Build a shuffled, repeating visual strip for the idle crate preview */
-export function buildIdleSlots(items: CandidateItem[], winnerItem?: CandidateItem | null): CandidateItem[] {
+/** Cosmetic preview with current odds and a fixed landed-winner slot. */
+export function buildIdleSlots(items: CandidateItem[], winnerItem?: CandidateItem | null, probabilities: number[] = []): CandidateItem[] {
   if (items.length === 0) return winnerItem ? [winnerItem] : [];
   const pool = winnerItem ? items.filter((i) => i.id !== winnerItem.id) : items;
-  const shuffled = [...pool];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = shuffled[i]!;
-    shuffled[i] = shuffled[j]!;
-    shuffled[j] = temp;
-  }
-  const repeated: CandidateItem[] = [];
-  while (repeated.length < 24) {
-    repeated.push(...(shuffled.length > 0 ? shuffled : items));
-  }
-  const result = repeated.slice(0, 32);
+  const weights = probabilities.filter((_, i) => !winnerItem || items[i]?.id !== winnerItem.id);
+  const result = Array.from({ length: 32 }, () => sampleDecoy(pool, weights) ?? winnerItem ?? items[0]!);
   if (winnerItem) {
     const centerIndex = Math.min(4, Math.floor(result.length / 2));
     result[centerIndex] = winnerItem;

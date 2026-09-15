@@ -18,7 +18,7 @@ describe("runRandomizer", () => {
     expect(result.status).toBe("OK");
     if (result.status === "OK") {
       expect(["a", "b"]).toContain(result.selection.winner.id);
-      expect(result.selection.algorithmVersion).toBe("randomizer-v1.0.0");
+      expect(result.selection.algorithmVersion).toBe("randomizer-v2.1.0");
     }
   });
 
