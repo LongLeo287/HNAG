@@ -216,12 +216,10 @@ export function GameShell() {
         <SmartContextBar
           context={deviceContext}
           matchedCount={currentEligiblePool.length}
+          useContextSuggestions={useContextSuggestions}
+          onContextSuggestionsChange={setUseContextSuggestions}
+          disabled={game.phase === "spinning"}
         />
-        <label className="flex min-h-11 cursor-pointer items-center gap-2 text-xs text-ink-700">
-          <input type="checkbox" checked={useContextSuggestions} disabled={game.phase === "spinning"}
-            onChange={(event) => setUseContextSuggestions(event.target.checked)} />
-          Lọc gợi ý theo giờ và thời tiết đã xác định
-        </label>
 
         {!storageAvailable && (
           <p role="status" className="rounded-xl border border-gold-500/40 bg-gold-500/10 p-3 text-sm text-gold-400">
