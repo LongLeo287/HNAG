@@ -7,7 +7,8 @@
 [![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Release](https://img.shields.io/badge/Release-v1.0.0-gold?style=for-the-badge)](https://github.com/LongLeo287/HNAG)
 [![Audit](https://img.shields.io/badge/Audit-Passed%20(15%2F09%2F2026)-blue?style=for-the-badge)](./docs/local-audit-2026-09-15.md)
-[![Tests](https://img.shields.io/badge/Tests-103%20Passed-22c55e?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Tests](https://img.shields.io/badge/Vitest-169%20Passed-22c55e?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
+[![E2E Tests](https://img.shields.io/badge/Playwright-90%20Passed-2ba02c?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
 
 > **Không biết ăn gì hay uống gì?** Hãy để **#HNAG** chốt giúp bạn chỉ với một lần mở hòm! Trò chơi quyết định món ăn phong cách mở hòm CS:GO / Blindbox đầu tiên dành cho ẩm thực Việt Nam, chạy 100% trên trình duyệt và không cần cài đặt.
 
@@ -15,51 +16,51 @@
 
 ---
 
-## 🌟 Điểm nổi bật
+## 🌟 Điểm nổi bật phiên bản mới nhất
 
-### 1. 🧠 Nhận Diện Ngữ Cảnh Tự Động Thông Minh (100% Automatic)
-Không cần thao tác bấm chọn rườm rà. Hệ thống tự động phân tích bối cảnh thời gian thực để gợi ý món ăn chuẩn xác nhất:
-- 🌅 **Buổi sáng (05:00 - 10:30)**: Ưu tiên bún, phở, bánh mì, xôi, cà phê sáng tràn đầy năng lượng.
-- ☀️ **Buổi trưa (10:30 - 14:00)**: Cơm tấm, cơm văn phòng, bún chả, mì xào no bụng, nạp năng lượng.
-- 🧋 **Buổi xế chiều (14:00 - 17:30)**: Trà sữa, chè, kem, bánh tráng và các món ăn vặt giải nhiệt.
-- 🍲 **Buổi tối (17:30 - 21:30)**: Bữa cơm ấm cúng, lẩu, nướng BBQ, tụ họp gia đình và bạn bè.
-- 🌙 **Ăn khuya (21:30 - 05:00)**: Cháo sườn đêm, mì xào khuya, ốc nóng, bánh mì dân tổ.
-- 🌦️ **Thời tiết & Mùa vụ**: Tự động ưu tiên món thanh đạm, đồ uống mát lạnh khi trời nắng; món nóng hổi xì xụp, lẩu nướng khi se lạnh hoặc trời mưa.
-- 📅 **Ngày trong tuần**: Phân biệt ngày thường (tiện lợi, nhanh gọn) vs cuối tuần (ăn nhậu, tụ tập lai rai).
+### 1. 🧠 Ngữ Cảnh Thiết Bị & Lịch Âm Việt Nam (100% Tự Động)
+Hệ thống tự động đồng bộ theo thời gian thực của thiết bị:
+- 📅 **Lịch Âm UTC+7**: Tính toán ngày âm lịch chuẩn xác theo múi giờ Việt Nam.
+- 🌅 **Khung giờ bữa ăn tự nhiên**:
+  - 🌅 **Buổi sáng (05:00 - 10:30)**: Ưu tiên bún, phở, bánh mì, xôi, cà phê sáng tràn đầy năng lượng.
+  - ☀️ **Buổi trưa (10:30 - 14:00)**: Cơm tấm, cơm văn phòng, bún chả, mì xào no bụng, nạp năng lượng.
+  - 🧋 **Buổi xế chiều (14:00 - 17:30)**: Trà sữa, chè, kem, bánh tráng và các món ăn vặt giải nhiệt.
+  - 🍲 **Buổi tối (17:30 - 21:30)**: Bữa cơm ấm cúng, lẩu, nướng BBQ, tụ họp gia đình và bạn bè.
+  - 🌙 **Ăn khuya (21:30 - 05:00)**: Cháo sườn đêm, mì xào khuya, ốc nóng, bánh mì dân tổ.
+- 🌦️ **Thời tiết & Vị trí**: Tùy chọn bật định vị thiết bị & thời tiết Open-Meteo hoàn toàn bảo mật, không lưu tọa độ hay snapshot lên máy chủ.
 
-### 2. 🇻🇳 Kho Dữ Liệu 1.650+ Món Đặc Sản Việt Nam
-- Dữ liệu ẩm thực toàn diện chuẩn hóa từ 36+ tỉnh thành và mọi vùng miền: Hà Nội, TP. Hồ Chí Minh, Đà Nẵng, Huế, Cần Thơ, Hải Phòng, Tây Nguyên, Miền Tây, Tây Bắc...
-- Đã được sàng lọc kỹ càng, loại bỏ gia vị thô, đảm bảo 100% là các món ăn và đồ uống hoàn chỉnh.
-- Đầy đủ thông tin nguồn gốc địa danh, đặc điểm nguyên liệu, mức giá tham khảo và phân hạng độ hiếm (Thường, Ngon, Đỉnh, Huyền Thoại).
+### 2. 🇻🇳 Kho Dữ Liệu 1.731 Món & 39 Đặc Sản Vùng Miền Có Nguồn
+- 1.731 món ăn và thức uống chọn lọc kỹ lưỡng từ 36+ tỉnh thành và mọi vùng miền Việt Nam.
+- **39 Đặc sản vùng miền trứ danh** được cấp chứng nhận nguồn gốc (Tem Vùng Miền), có hiệu ứng âm thanh chimes đặc trưng và hiệu ứng mở hòm độc bản.
+- 18 danh mục ẩm thực phong phú, hỗ trợ phân loại Món Ăn / Đồ Uống tách biệt.
 
-### 3. 📦 5 Loại Hòm Tác Chiến (Crates)
-Mỗi loại hòm được thiết kế riêng với hiệu ứng hình ảnh, âm thanh và bảng ngọc rực rỡ:
-- 🍱 **Hòm Bữa Chính**: Cơm, bún, phở, mì chuẩn vị Việt Nam.
-- 🧋 **Hòm Giải Khát**: Trà sữa, cà phê, sinh tố, nước ép tươi mát.
-- 🍢 **Hòm Ăn Vặt**: Thiên đường đồ ăn vặt đường phố, xiên que, bánh tráng, chè kem.
-- 🍻 **Hòm Ăn Nhậu**: Chiến hữu tụ tập với lẩu thái, nướng BBQ và ốc cay nồng.
-- 🥗 **Hòm Đồ Chay**: Lựa chọn thanh đạm, tươi ngon từ rau củ tự nhiên.
+### 3. 📦 6 Loại Hòm Tác Chiến (Crates) & Phân Loại Độc Lập
+Giao diện phân định rõ ràng giữa **Món Ăn** và **Đồ Uống**:
+- 🍱 **Hòm Bữa Chính**: Cơm, bún, phở, bánh cuốn, mì miến xôi chuẩn vị.
+- 🍢 **Hòm Ăn Vặt**: Bánh tráng, nem nướng, chè, kem, xiên que đường phố.
+- 🍻 **Hòm Ăn Nhậu**: Lẩu nướng BBQ, ốc, hải sản và các món nhâm nhi chiến hữu.
+- 🥗 **Hòm Đồ Chay**: Lựa chọn thanh đạm từ rau củ, đậu nấm tươi ngon tự nhiên.
+- ☕ **Hòm Trà & Cà Phê**: Cà phê phin, trà sen, trà đào thanh mát.
+- 🧋 **Hòm Đồ Uống Khác**: Sinh tố, nước ép, trà sữa, chè dưỡng nhan.
 
-### 4. 🎰 5 Chế Độ Mở Kết Quả Đa Dạng
-Tùy biến cách chốt món theo phong cách bạn thích:
+### 4. 📊 Bảng Tỷ Lệ Độ Hiếm Thời Gian Thực (Rarity Odds)
+Công thức xác suất thích ứng chuẩn xác:
+- 🟢 **Thường** (Common) ~ 80%
+- 🔵 **Hiếm** (Rare) ~ 16%
+- 🟣 **Siêu Hiếm** (Epic) ~ 3.5%
+- 🟡 **Huyền Thoại** (Legendary) ~ 0.5%
+- 🏷️ **Đặc Sản Vùng Miền**: Hiển thị xác suất chính xác theo bộ lọc ngữ cảnh và ngân sách đang chọn.
+
+### 5. 🎰 5 Chế Độ Mở Kết Quả Đa Dạng
 - 🎯 **CS:GO Reel**: Dải băng cuộn giật giật hồi hộp phong cách mở hòm game chiến thuật.
 - 🎁 **Blindbox Hộp Bí Mật**: Rung lắc hồi hộp và nổ bung phần thưởng.
 - 🎡 **Vòng Xoay May Mắn**: Bánh xe kim đồng hồ quay tít với âm thanh click vui tai.
 - 🎰 **Slot Machine Bar**: 3 cột nhảy số liên tục chuẩn máy đánh bạc cổ điển.
 - 🃏 **Lật Thẻ Bài**: Hiệu ứng lật thẻ 3D lấp lánh bí ẩn.
 
-### 5. 🛵 Chốt Món & Đặt Hàng 1 Chạm
-Sau khi quay trúng món ưng ý, người dùng có thể mở trực tiếp ứng dụng giao đồ ăn quen thuộc để đặt ngay:
-- 🟢 **GrabFood**
-- 🟠 **ShopeeFood**
-- 🟡 **beFood**
-- 🔵 **Xanh SM**
-- 📍 **Google Maps** (tìm quán gần nhất quanh vị trí hiện tại)
-
-### 6. 🔒 Hoàn Toàn Riêng Tư & Chạy Phía Trình Duyệt
-- **Zero Tracker / Zero Geolocation Prompt**: Không đòi hỏi quyền vị trí GPS, không theo dõi người dùng.
-- **Offline Resilience**: Hoạt động mượt mà ngay cả khi mất mạng sau khi tải trang.
-- Lưu toàn bộ cấu hình, lịch sử và tùy biến vào `localStorage` cá nhân.
+### 6. 🛵 Deep Link Ứng Dụng Giao Hàng & Danh Lam Thắng Cảnh
+- Chuyển thẳng sang app native **GrabFood** (kèm tên món đã chọn), **ShopeeFood**, **Gojek**, hoặc tìm quán trên **Google Maps**.
+- 6 phông nền danh lam thắng cảnh Việt Nam: Hồ Gươm, Chợ Bến Thành, Cầu Rồng, Vịnh Hạ Long, Phố Cổ Hội An, Chợ Nổi Cái Răng.
 
 ---
 
@@ -89,12 +90,12 @@ Mở trình duyệt tại: `http://localhost:5173` (hoặc cổng hiển thị t
 | `pnpm dev` | Khởi chạy máy chủ phát triển Vite với Hot Reload |
 | `pnpm build` | Build bundle production đã tối ưu (HTML/CSS/JS tĩnh) |
 | `pnpm preview` | Xem trước bản build production tại localhost |
-| `pnpm test` | Chạy 103 unit tests với Vitest (kiểm tra randomizer, pool, context engine) |
-| `pnpm e2e` | Chạy kiểm thử tự động toàn diện với Playwright (desktop, mobile, reduced motion) |
-| `pnpm validate:catalog` | Kiểm tra tính toàn vẹn và dung lượng media của 1.700+ món |
+| `pnpm test` | Chạy 169 unit tests với Vitest (kiểm tra randomizer, pool, context engine, lịch âm, độ hiếm) |
+| `pnpm e2e` | Chạy kiểm thử tự động toàn diện 90 kịch bản với Playwright (desktop, mobile, reduced motion) |
+| `pnpm validate:catalog` | Kiểm tra tính toàn vẹn và dung lượng media của 1.731 món ăn & đồ uống |
 | `pnpm check:boundaries` | Kiểm tra biên giới module, giữ logic randomizer độc lập giao diện |
 | `pnpm check:scope` | Chặn phình phạm vi và rò rỉ mã không mong muốn |
-| `pnpm verify` | Chạy toàn bộ các bước kiểm thử chất lượng + build |
+| `pnpm verify` | Chạy toàn bộ các bước kiểm thử chất lượng (typecheck, lint, test, validate, scope) + build |
 
 ---
 
