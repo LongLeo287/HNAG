@@ -19,7 +19,6 @@ import { bundledItemsForKind } from "@/data/catalog";
 import { combinePool } from "@/features/pool";
 import { useSmartContext, filterItemsByContext, SmartContextBar } from "@/features/context";
 import { applyHardFilters, applyRespinExclusion, computeWeights, stableSortById } from "@/features/randomizer/domain";
-import { RarityOdds } from "@/components/ui/RarityOdds";
 import { FoodDrinkToggle } from "./FoodDrinkToggle";
 import { eligibleForCrate, filtersForCrate, initialCrateId } from "../crateFilters";
 import { loadPreferences, savePreferences } from "@/lib/local-preferences";
@@ -267,7 +266,17 @@ export function GameShell() {
             accentHex={currentCrate.theme.primaryHex}
           />
 
-          <RarityOdds odds={game.phase === "spinning" && game.frozenSelection ? game.frozenSelection : nextDrawOdds} />
+          {/* Subtle quick access pill to view odds in menu */}
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Xem tỉ lệ mở theo bộ lọc hiện tại"
+            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-canvas-200/80 px-4 py-1.5 text-xs font-medium text-ink-500 hover:border-gold-500/40 hover:bg-canvas-300 hover:text-white transition-all shadow-sm group cursor-pointer"
+          >
+            <span className="text-sm">📊</span>
+            <span>Tỉ lệ mở theo bộ lọc</span>
+            <span className="text-[10px] text-ink-700 group-hover:text-gold-400 group-hover:translate-x-0.5 transition-all">→</span>
+          </button>
 
           <GameControls
             crate={currentCrate}
@@ -358,6 +367,7 @@ export function GameShell() {
           onReducedMotionOverrideChange={setReducedMotionOverride}
           onOpenPreferences={() => setDrawerOpen(true)}
           onReset={handleReset}
+          odds={game.phase === "spinning" && game.frozenSelection ? game.frozenSelection : nextDrawOdds}
         />
 
         {/* Pool Preferences Drawer */}

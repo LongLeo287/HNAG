@@ -29,8 +29,13 @@ test("all six crates expose filtered odds and keep them through open, repeat and
     const selected = crates.filter({hasText:name});
     await selected.click();
     await expect(selected).toHaveAttribute("aria-checked", "true");
-    const expected = await page.getByRole("region", { name: "Tỉ lệ mở hộp", exact: true }).locator("dd").allTextContents();
+    await page.getByRole("button", { name: /tỉ lệ mở theo bộ lọc/i }).click();
+    const region = page.getByRole("region", { name: "Tỉ lệ mở hộp", exact: true });
+    await expect(region).toBeVisible();
+    const expected = await region.locator("dd").allTextContents();
     expect(expected.map((value)=>Number(value.replace("%","").replace(",","."))).reduce((a,b)=>a+b,0)).toBeCloseTo(100,1);
+    await page.keyboard.press("Escape");
+    await expect(region).not.toBeVisible();
     await page.getByRole("button", { name: /mở hộp/i }).click();
     const result = page.getByRole("dialog", { name: "Kết quả mở hòm" });
     await expect(result).toBeVisible();
