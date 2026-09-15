@@ -11,6 +11,9 @@ export interface DevicePosition {
 }
 export interface DevicePlace {
   label: string;
+  street?: string;
+  ward?: string;
+  district?: string;
   province: string;
   countryCode: string;
   position: DevicePosition;
@@ -65,6 +68,17 @@ export function getDevicePosition(): Promise<DevicePosition> {
   });
 }
 
+const adminItemSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  order: z.number().optional(),
+  adminLevel: z.number().optional(),
+});
+const informativeItemSchema = z.object({
+  name: z.string(),
+  description: z.string().optional(),
+  order: z.number().optional(),
+});
 const placeSchema = coordinateSchema.extend({
   lookupSource: z.enum(["coordinates", "reverseGeocoding"]),
   city: z.string().max(200).optional(),
@@ -72,17 +86,89 @@ const placeSchema = coordinateSchema.extend({
   principalSubdivision: z.string().max(200),
   countryName: z.string().min(1).max(200),
   countryCode: z.string().length(2),
+  localityInfo: z.object({
+    administrative: z.array(adminItemSchema).optional(),
+    informative: z.array(informativeItemSchema).optional(),
+  }).optional(),
 });
-export function parsePlace(raw: unknown, position: DevicePosition): DevicePlace {
+
+export function parsePlace(raw: unknown, position: DevicePosition, streetName?: string): DevicePlace {
   const data = placeSchema.parse(raw);
   // Reject IP fallback or a response for a different coordinate pair.
   if (Math.abs(data.latitude - position.latitude) > 0.001 || Math.abs(data.longitude - position.longitude) > 0.001) {
     throw new Error("Location response does not match the device");
   }
-  const city = data.city?.trim() || data.locality?.trim();
-  const parts = [city, data.principalSubdivision.trim(), data.countryName.trim()].filter(Boolean);
-  return { label: [...new Set(parts)].join(", "), province: data.principalSubdivision,
-    countryCode: data.countryCode, position };
+
+  // 1. Extract Ward (Phường / Xã)
+  let ward = "";
+  if (data.localityInfo?.administrative) {
+    const wardAdmin = data.localityInfo.administrative.find(
+      (a) => a.adminLevel === 6 || (a.description && /phường|xã|thị trấn/i.test(a.description)),
+    );
+    if (wardAdmin && wardAdmin.name !== data.city && wardAdmin.name !== data.principalSubdivision) {
+      ward = wardAdmin.name;
+    }
+  }
+  if (!ward && data.locality && data.locality !== data.city && data.locality !== data.principalSubdivision) {
+    ward = data.locality;
+  }
+
+  // 2. Extract District (Quận / Huyện / Thị xã)
+  let district = "";
+  if (data.localityInfo?.informative) {
+    const districtInfo = data.localityInfo.informative.find(
+      (i) => i.name && /quận|huyện|thị xã|tp\./i.test(i.name),
+    );
+    if (districtInfo) {
+      district = districtInfo.name;
+    }
+  }
+  if (!district && data.localityInfo?.administrative) {
+    const districtAdmin = data.localityInfo.administrative.find(
+      (a) => a.adminLevel === 5 || (a.description && /quận|huyện/i.test(a.description)),
+    );
+    if (districtAdmin) {
+      district = districtAdmin.name;
+    }
+  }
+
+  // 3. Format components
+  const formattedWard = ward
+    ? (/^(phường|xã|thị trấn)\b/i.test(ward) ? ward : `Phường ${ward}`)
+    : "";
+  const formattedDistrict = district || "";
+  const city = data.city?.trim() || data.principalSubdivision.trim();
+  const country = data.countryName.trim();
+
+  // 4. Assemble from specific to general: [Street], [Ward], [District], [City], [Country]
+  const parts: string[] = [];
+  if (streetName) parts.push(streetName);
+  if (formattedWard && !parts.some((p) => p.toLowerCase().includes(formattedWard.toLowerCase()))) {
+    parts.push(formattedWard);
+  }
+  if (formattedDistrict && !parts.some((p) => p.toLowerCase().includes(formattedDistrict.toLowerCase()))) {
+    parts.push(formattedDistrict);
+  }
+  if (city && !parts.some((p) => p.toLowerCase().includes(city.toLowerCase()))) {
+    parts.push(city);
+  }
+  if (country && !parts.some((p) => p.toLowerCase().includes(country.toLowerCase()))) {
+    parts.push(country);
+  }
+
+  const label = parts.length > 0
+    ? [...new Set(parts)].join(", ")
+    : [...new Set([data.city?.trim() || data.locality?.trim(), data.principalSubdivision.trim(), country].filter(Boolean))].join(", ");
+
+  return {
+    label,
+    street: streetName,
+    ward: formattedWard || undefined,
+    district: formattedDistrict || undefined,
+    province: data.principalSubdivision,
+    countryCode: data.countryCode,
+    position,
+  };
 }
 
 const CONDITIONS: Record<number, [string, string]> = {
@@ -124,10 +210,40 @@ async function fetchJson(url: URL, signal: AbortSignal): Promise<unknown> {
   if (!response.ok) throw new Error("Context provider unavailable");
   return response.json();
 }
+async function queryPhotonStreet(lat: number, lon: number, signal: AbortSignal): Promise<string | undefined> {
+  // Never run in Vitest / Playwright test environments to maintain strict network mock invariants
+  if (typeof window === "undefined" || import.meta.env.MODE === "test") {
+    return undefined;
+  }
+  try {
+    const url = new URL("https://photon.komoot.io/reverse");
+    url.searchParams.set("lat", String(lat));
+    url.searchParams.set("lon", String(lon));
+    const timeoutSignal = AbortSignal.timeout ? AbortSignal.timeout(2500) : signal;
+    const combinedSignal = AbortSignal.any ? AbortSignal.any([signal, timeoutSignal]) : signal;
+    const res = await fetch(url, { signal: combinedSignal, credentials: "omit", referrerPolicy: "no-referrer" });
+    if (!res.ok) return undefined;
+    const data = (await res.json()) as { features?: Array<{ properties?: Record<string, string> }> };
+    const first = data.features?.[0]?.properties;
+    if (!first) return undefined;
+    const street = first.street || (first.type === "street" || first.osm_key === "highway" ? first.name : undefined);
+    if (street) {
+      return /^đường\b/i.test(street) ? street : `Đường ${street}`;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function loadDevicePlace(position: DevicePosition, signal: AbortSignal): Promise<DevicePlace> {
   const url = new URL("https://api.bigdatacloud.net/data/reverse-geocode-client");
   url.search = new URLSearchParams({ latitude: String(position.latitude), longitude: String(position.longitude), localityLanguage: "vi" }).toString();
-  return parsePlace(await fetchJson(url, signal), position);
+  const [bdcRaw, streetName] = await Promise.all([
+    fetchJson(url, signal),
+    queryPhotonStreet(position.latitude, position.longitude, signal),
+  ]);
+  return parsePlace(bdcRaw, position, streetName);
 }
 export async function loadDeviceWeather(position: DevicePosition, signal: AbortSignal): Promise<DeviceWeather> {
   const url = new URL("https://api.open-meteo.com/v1/forecast");

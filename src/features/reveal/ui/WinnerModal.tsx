@@ -12,6 +12,7 @@ interface WinnerModalProps {
   reducedMotion?: boolean;
   winningProbability?: number;
   respinOdds?: DrawOdds;
+  locationHint?: { label?: string; position?: { latitude: number; longitude: number } };
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
@@ -29,6 +30,7 @@ export function WinnerModal({
   reducedMotion,
   winningProbability,
   respinOdds,
+  locationHint,
   onAccept,
   onRespin,
   onEditPool,
@@ -93,6 +95,7 @@ export function WinnerModal({
           <ResultActions
             dishName={winner.name}
             respinOdds={respinOdds}
+            locationHint={locationHint}
             onAccept={onAccept}
             onRespin={onRespin}
             onEditPool={onEditPool}

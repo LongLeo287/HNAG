@@ -8,11 +8,12 @@ import {
 import type { DrawOdds } from "@/features/randomizer/domain";
 import { RarityOdds } from "@/components/ui/RarityOdds";
 import { useState } from "react";
-import { buildExternalAppLinks, detectAppPlatform, type ExternalAppId } from "@/lib/external-app-links";
+import { buildExternalAppLinks, detectAppPlatform, type ExternalAppId, type LocationContextHint } from "@/lib/external-app-links";
 
 interface ResultActionsProps {
   dishName?: string;
   respinOdds?: DrawOdds;
+  locationHint?: LocationContextHint;
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
@@ -22,6 +23,7 @@ interface ResultActionsProps {
 export function ResultActions({
   dishName,
   respinOdds,
+  locationHint,
   onAccept,
   onRespin,
   onEditPool,
@@ -30,7 +32,7 @@ export function ResultActions({
   const [attemptedApp, setAttemptedApp] = useState<ExternalAppId | null>(null);
   const [copiedName, setCopiedName] = useState<string | null>(null);
   const [copyFailed, setCopyFailed] = useState(false);
-  const links = buildExternalAppLinks(dishName ?? "", platform);
+  const links = buildExternalAppLinks(dishName ?? "", platform, locationHint);
   const isMobile = platform !== "desktop";
 
   function appLinkProps(id: ExternalAppId) {
@@ -191,10 +193,14 @@ export function ResultActions({
           <a
             {...appLinkProps("maps")}
             className="mt-2.5 flex items-center justify-center gap-2 rounded-xl border border-blue-500/25 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-2 text-xs font-semibold text-blue-300 transition-all hover:border-blue-500/40 hover:text-white"
-            title={`Tìm quán ${dishName} gần đây trên Google Maps`}
+            title={locationHint?.label ? `Tìm quán ${dishName} quanh ${locationHint.label} trên Google Maps` : `Tìm quán ${dishName} gần đây trên Google Maps`}
           >
             <GoogleMapsLogo className="h-4 w-4 text-blue-400" />
-            <span>Tìm quán gần bạn trên Google Maps</span>
+            <span>
+              {locationHint?.label
+                ? `Tìm quán quanh ${locationHint.label.split(",")[0]} trên Google Maps`
+                : "Tìm quán gần bạn trên Google Maps"}
+            </span>
             <span className="text-blue-400/70 text-[11px]">↗</span>
           </a>
         </div>

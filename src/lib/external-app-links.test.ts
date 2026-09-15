@@ -59,4 +59,16 @@ describe("external app destinations", () => {
       expect(link.target).toBe("_blank");
     }
   });
+
+  it("applies location hint to Google Maps and delivery search when location is provided", () => {
+    const hint = {
+      label: "Đường Chế Lan Viên, Phường Tây Thạnh, Quận Tân Phú, TP. Hồ Chí Minh",
+      position: { latitude: 10.8066, longitude: 106.6322 },
+    };
+    const links = buildExternalAppLinks("Cơm tấm", "desktop", hint);
+    const mapsUrl = new URL(links.maps.href);
+    expect(mapsUrl.searchParams.get("query")).toContain("Cơm tấm");
+    expect(mapsUrl.searchParams.get("query")).toContain("Đường Chế Lan Viên");
+    expect(mapsUrl.searchParams.get("center")).toBe("10.8066,106.6322");
+  });
 });

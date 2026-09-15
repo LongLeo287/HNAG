@@ -17,6 +17,7 @@ interface CrateStageProps {
   revealThemeId: string;
   audio: GameAudio;
   crate?: CrateDefinition;
+  locationHint?: { label?: string; position?: { latitude: number; longitude: number } };
   onLanded: () => void;
   onAccept: () => void;
   onRespin: () => void;
@@ -37,6 +38,7 @@ export function CrateStage({
   revealThemeId,
   audio,
   crate,
+  locationHint,
   onLanded,
   onAccept,
   onRespin,
@@ -117,6 +119,7 @@ export function CrateStage({
               reducedMotion={reducedMotion}
               winningProbability={frozenSelection.probabilities[frozenSelection.eligiblePool.findIndex((item) => item.id === frozenSelection.winner.id)]}
               respinOdds={nextDrawOdds}
+              locationHint={locationHint}
               onAccept={onAccept}
               onRespin={onRespin}
               onEditPool={onEditPool}

@@ -30,11 +30,27 @@ export interface ExternalAppLink {
  * as App Links metadata. Be/Green SM publish theirs on their official app landing links.
  * No provider SDK, API, installed-app probing or delayed navigation is involved.
  */
-export function buildExternalAppLinks(dishName: string, platform: AppPlatform): Record<ExternalAppId, ExternalAppLink> {
+export interface LocationContextHint {
+  label?: string;
+  position?: { latitude: number; longitude: number };
+}
+
+export function buildExternalAppLinks(
+  dishName: string,
+  platform: AppPlatform,
+  locationHint?: LocationContextHint,
+): Record<ExternalAppId, ExternalAppLink> {
   const query = encodeURIComponent(dishName);
-  const nearby = encodeURIComponent(`${dishName} gần đây`);
+  const areaPart = locationHint?.label
+    ? locationHint.label.split(",").slice(0, 2).join(", ").trim()
+    : "";
+  const locationText = areaPart ? ` ${areaPart}` : " gần đây";
+  const nearby = encodeURIComponent(`${dishName}${locationText}`);
   const grabNative = `grab://open?screenType=GRABFOOD&searchParameter=${query}`;
-  const mapsWeb = `https://www.google.com/maps/search/?api=1&query=${nearby}`;
+  const centerParam = locationHint?.position
+    ? `&center=${locationHint.position.latitude},${locationHint.position.longitude}`
+    : "";
+  const mapsWeb = `https://www.google.com/maps/search/?api=1&query=${nearby}${centerParam}`;
   const destinations: Record<ExternalAppId, AppDestination> = {
     grab: {
       name: "GrabFood", iosUrl: grabNative, androidUrl: grabNative,

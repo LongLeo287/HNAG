@@ -265,6 +265,14 @@ export function GameShell() {
           revealThemeId={revealThemeId}
           audio={audio}
           crate={currentCrate}
+          locationHint={
+            deviceContext.place.status === "ready"
+              ? {
+                  label: deviceContext.place.data.label,
+                  position: deviceContext.place.data.position,
+                }
+              : undefined
+          }
           onLanded={landed}
           onAccept={accept}
           onRespin={handleRespin}

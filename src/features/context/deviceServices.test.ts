@@ -45,6 +45,29 @@ describe("device/provider validation", () => {
     expect(parsePlace({ ...place, lookupSource: "coordinates" }, position).countryCode).toBe("VN");
     expect(() => parsePlace({}, position)).toThrow();
   });
+  it("extracts street, ward, and district for high-accuracy location labeling", () => {
+    const detailedPlace = {
+      ...place,
+      locality: "Tân Bình",
+      localityInfo: {
+        administrative: [
+          { name: "Việt Nam", adminLevel: 2 },
+          { name: "Thành phố Hồ Chí Minh", adminLevel: 4 },
+          { name: "Phường Tây Thạnh", adminLevel: 6 },
+        ],
+        informative: [
+          { name: "Quận Tân Phú" },
+        ],
+      },
+    };
+    const parsed = parsePlace(detailedPlace, position, "Đường Chế Lan Viên");
+    expect(parsed.street).toBe("Đường Chế Lan Viên");
+    expect(parsed.ward).toBe("Phường Tây Thạnh");
+    expect(parsed.district).toBe("Quận Tân Phú");
+    expect(parsed.label).toContain("Đường Chế Lan Viên");
+    expect(parsed.label).toContain("Phường Tây Thạnh");
+    expect(parsed.label).toContain("Quận Tân Phú");
+  });
   it("builds both requests from the supplied device position, with no IP-only call", async () => {
     const fetchMock = vi.fn(async (url: URL) => ({ ok: true, json: async () => url.hostname.includes("bigdatacloud")
       ? { ...place, latitude: 21.0285, longitude: 105.8542 }
