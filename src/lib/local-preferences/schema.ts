@@ -42,6 +42,8 @@ export const PreferencesSchema = z.object({
   // Odds settings ("Phần tỉ lệ thì có setting riêng")
   oddsPreset: z.enum(["STANDARD", "BALANCED", "PREMIUM", "EQUAL"]).default("STANDARD"),
   specialtyBoost: z.boolean().default(false),
+  // 3D Crate graphics tier: AUTO (device-adaptive), MOBILE (lightweight procedural), DESKTOP (high-fidelity cinematic)
+  graphicsQuality: z.enum(["AUTO", "MOBILE", "DESKTOP"]).default("AUTO"),
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 
@@ -68,4 +70,5 @@ export const DEFAULT_PREFERENCES: Preferences = {
   contextAutoSyncTime: true,
   oddsPreset: "STANDARD",
   specialtyBoost: false,
+  graphicsQuality: "AUTO",
 };

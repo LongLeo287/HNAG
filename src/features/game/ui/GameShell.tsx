@@ -47,6 +47,7 @@ export function GameShell() {
     reducedMotionOverride,
     oddsPreset,
     specialtyBoost,
+    graphicsQuality,
     setFilters,
     setSound,
     setBackground,
@@ -54,6 +55,7 @@ export function GameShell() {
     setReducedMotionOverride,
     setOddsPreset,
     setSpecialtyBoost,
+    setGraphicsQuality,
     open,
     respin,
     landed,
@@ -400,6 +402,8 @@ export function GameShell() {
           onBackgroundChange={setBackground}
           reducedMotionOverride={reducedMotionOverride}
           onReducedMotionOverrideChange={setReducedMotionOverride}
+          graphicsQuality={graphicsQuality}
+          onGraphicsQualityChange={setGraphicsQuality}
           onOpenPreferences={() => setDrawerOpen(true)}
           onReset={handleReset}
           deviceContext={deviceContext}

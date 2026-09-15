@@ -5,6 +5,7 @@ import { SfxToggle } from "@/features/audio/SfxToggle";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { MotionModePicker } from "./MotionModePicker";
 import type { useSmartContext } from "@/features/context/useSmartContext";
+import type { GraphicsQualityPreference } from "@/features/reveal/three/deviceTier";
 
 interface SettingsDrawerProps {
   open: boolean;
@@ -16,6 +17,8 @@ interface SettingsDrawerProps {
   onBackgroundChange: (id: string) => void;
   reducedMotionOverride: boolean | null;
   onReducedMotionOverrideChange: (value: boolean | null) => void;
+  graphicsQuality?: GraphicsQualityPreference;
+  onGraphicsQualityChange?: (quality: GraphicsQualityPreference) => void;
   onOpenPreferences: () => void;
   onReset: () => void;
   deviceContext?: ReturnType<typeof useSmartContext>;
@@ -36,6 +39,8 @@ export function SettingsDrawer({
   onBackgroundChange,
   reducedMotionOverride,
   onReducedMotionOverrideChange,
+  graphicsQuality = "AUTO",
+  onGraphicsQualityChange,
   onOpenPreferences,
   onReset,
   deviceContext,
@@ -230,6 +235,57 @@ export function SettingsDrawer({
                 </div>
               </div>
             )}
+
+            {/* Section: 3D Crate Graphics Tier */}
+            <div className="flex flex-col gap-2.5 border-t border-white/10 pt-5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold tracking-wide text-ink-500 uppercase">
+                  Đồ họa hòm 3D
+                </span>
+                <span className="text-[11px] font-medium text-gold-400">
+                  {graphicsQuality === "DESKTOP"
+                    ? "Chi tiết cao (PC)"
+                    : graphicsQuality === "MOBILE"
+                    ? "Tiết kiệm (Mobile)"
+                    : "Tự động thích ứng"}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-1.5 rounded-xl border border-white/10 bg-canvas-300/40 p-1">
+                {(
+                  [
+                    { id: "AUTO", label: "Tự động", desc: "Theo thiết bị", icon: "⚙️" },
+                    { id: "MOBILE", label: "Mobile", desc: "Siêu nhẹ", icon: "📱" },
+                    { id: "DESKTOP", label: "PC / Lap", desc: "Điện ảnh", icon: "💻" },
+                  ] as const
+                ).map((opt) => {
+                  const active = (graphicsQuality ?? "AUTO") === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => onGraphicsQualityChange?.(opt.id)}
+                      className={`flex flex-col items-center justify-center gap-0.5 rounded-lg py-2 px-1 text-center transition-all cursor-pointer ${
+                        active
+                          ? "bg-gold-500/20 border border-gold-400/50 text-gold-300 font-bold shadow-sm"
+                          : "border border-transparent text-ink-400 hover:text-ink-200 hover:bg-white/5"
+                      }`}
+                    >
+                      <span className="text-sm">{opt.icon}</span>
+                      <span className="text-xs">{opt.label}</span>
+                      <span className="text-[9px] opacity-75 hidden sm:inline">{opt.desc}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-ink-500 leading-normal">
+                {graphicsQuality === "DESKTOP"
+                  ? "Bật bóng đổ mềm thời gian thực, hạt ánh sáng bùng nổ và kéo chuột xoay 360°."
+                  : graphicsQuality === "MOBILE"
+                  ? "Chế độ siêu nhẹ không bóng đổ, tiết kiệm pin tối đa cho màn hình cảm ứng."
+                  : "Tự động phát hiện thiết bị: dùng bản siêu nhẹ cho điện thoại và bản điện ảnh cho máy tính."}
+              </p>
+            </div>
 
             {/* Section 3: Audio & System */}
             <div className="flex flex-col gap-4 border-t border-white/10 pt-5">

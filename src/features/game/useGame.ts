@@ -11,6 +11,7 @@ import {
 } from "@/features/randomizer/domain";
 import { loadPreferences, resetPreferences, savePreferences } from "@/lib/local-preferences";
 import { loadSpinCount, saveSpinCount } from "@/lib/local-preferences/spinCount";
+import type { GraphicsQualityPreference } from "@/features/reveal/three/deviceTier";
 import {
   INITIAL_GAME_STATE,
   acceptResult,
@@ -65,6 +66,9 @@ export function useGame() {
   const [specialtyBoost, setSpecialtyBoostState] = useState<boolean>(
     () => loadPreferences().specialtyBoost ?? false,
   );
+  const [graphicsQuality, setGraphicsQualityState] = useState<GraphicsQualityPreference>(
+    () => loadPreferences().graphicsQuality ?? "AUTO",
+  );
   const [previousWinnerId, setPreviousWinnerId] = useState<string | null>(null);
   const profileRef = useRef(profile);
   const spinInFlight = useRef(false);
@@ -85,6 +89,7 @@ export function useGame() {
       reducedMotionOverride?: boolean | null;
       oddsPreset?: OddsPreset;
       specialtyBoost?: boolean;
+      graphicsQuality?: GraphicsQualityPreference;
     }) => {
       const current = loadPreferences();
       const saved = savePreferences({
@@ -99,10 +104,11 @@ export function useGame() {
           next.reducedMotionOverride !== undefined ? next.reducedMotionOverride : reducedMotionOverride,
         oddsPreset: next.oddsPreset !== undefined ? next.oddsPreset : oddsPreset,
         specialtyBoost: next.specialtyBoost !== undefined ? next.specialtyBoost : specialtyBoost,
+        graphicsQuality: next.graphicsQuality !== undefined ? next.graphicsQuality : graphicsQuality,
       });
       setPreferencesSaved(saved);
     },
-    [backgroundId, game.draftFilters, profile, reducedMotionOverride, revealThemeId, soundEnabled, oddsPreset, specialtyBoost],
+    [backgroundId, game.draftFilters, profile, reducedMotionOverride, revealThemeId, soundEnabled, oddsPreset, specialtyBoost, graphicsQuality],
   );
 
   const setFilters = useCallback(
@@ -164,6 +170,15 @@ export function useGame() {
       if (spinInFlight.current) return;
       setSpecialtyBoostState(value);
       persist({ specialtyBoost: value });
+    },
+    [persist],
+  );
+
+  const setGraphicsQuality = useCallback(
+    (value: GraphicsQualityPreference) => {
+      if (spinInFlight.current) return;
+      setGraphicsQualityState(value);
+      persist({ graphicsQuality: value });
     },
     [persist],
   );
@@ -275,6 +290,7 @@ export function useGame() {
     setReducedMotionOverrideState(defaults.reducedMotionOverride);
     setOddsPresetState(defaults.oddsPreset);
     setSpecialtyBoostState(defaults.specialtyBoost);
+    setGraphicsQualityState(defaults.graphicsQuality);
     dispatch({ type: "ACCEPT" });
     dispatch({ type: "SET_FILTERS", patch: defaults.filters });
   }, []);
@@ -308,6 +324,7 @@ export function useGame() {
     reducedMotionOverride,
     oddsPreset,
     specialtyBoost,
+    graphicsQuality,
     combinedPool,
     eligiblePreviewPool,
     setFilters,
@@ -317,6 +334,7 @@ export function useGame() {
     setReducedMotionOverride,
     setOddsPreset,
     setSpecialtyBoost,
+    setGraphicsQuality,
     open,
     respin,
     landed,
