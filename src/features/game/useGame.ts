@@ -7,6 +7,7 @@ import {
   createCryptoUniformRng,
   runRandomizer,
   type RandomizerContext,
+  type OddsPreset,
 } from "@/features/randomizer/domain";
 import { loadPreferences, resetPreferences, savePreferences } from "@/lib/local-preferences";
 import { loadSpinCount, saveSpinCount } from "@/lib/local-preferences/spinCount";
@@ -58,6 +59,12 @@ export function useGame() {
   const [reducedMotionOverride, setReducedMotionOverrideState] = useState(
     () => loadPreferences().reducedMotionOverride,
   );
+  const [oddsPreset, setOddsPresetState] = useState<OddsPreset>(
+    () => loadPreferences().oddsPreset ?? "STANDARD",
+  );
+  const [specialtyBoost, setSpecialtyBoostState] = useState<boolean>(
+    () => loadPreferences().specialtyBoost ?? false,
+  );
   const [previousWinnerId, setPreviousWinnerId] = useState<string | null>(null);
   const profileRef = useRef(profile);
   const spinInFlight = useRef(false);
@@ -76,6 +83,8 @@ export function useGame() {
       backgroundId?: string;
       revealThemeId?: string;
       reducedMotionOverride?: boolean | null;
+      oddsPreset?: OddsPreset;
+      specialtyBoost?: boolean;
     }) => {
       const current = loadPreferences();
       const saved = savePreferences({
@@ -88,10 +97,12 @@ export function useGame() {
         revealThemeId: next.revealThemeId ?? revealThemeId,
         reducedMotionOverride:
           next.reducedMotionOverride !== undefined ? next.reducedMotionOverride : reducedMotionOverride,
+        oddsPreset: next.oddsPreset !== undefined ? next.oddsPreset : oddsPreset,
+        specialtyBoost: next.specialtyBoost !== undefined ? next.specialtyBoost : specialtyBoost,
       });
       setPreferencesSaved(saved);
     },
-    [backgroundId, game.draftFilters, profile, reducedMotionOverride, revealThemeId, soundEnabled],
+    [backgroundId, game.draftFilters, profile, reducedMotionOverride, revealThemeId, soundEnabled, oddsPreset, specialtyBoost],
   );
 
   const setFilters = useCallback(
@@ -139,13 +150,36 @@ export function useGame() {
     [persist],
   );
 
+  const setOddsPreset = useCallback(
+    (value: OddsPreset) => {
+      if (spinInFlight.current) return;
+      setOddsPresetState(value);
+      persist({ oddsPreset: value });
+    },
+    [persist],
+  );
+
+  const setSpecialtyBoost = useCallback(
+    (value: boolean) => {
+      if (spinInFlight.current) return;
+      setSpecialtyBoostState(value);
+      persist({ specialtyBoost: value });
+    },
+    [persist],
+  );
+
   const spin = useCallback(
     (previousWinnerId: string | null, poolOverride?: CandidateItem[]) => {
       if (spinInFlight.current) return;
       setSpinError(null);
       const bundled = bundledItemsForKind(game.draftFilters.kind);
       const pool = poolOverride ?? combinePool(bundled, profileRef.current);
-      const context: RandomizerContext = { ...game.draftFilters, previousWinnerId };
+      const context: RandomizerContext = {
+        ...game.draftFilters,
+        previousWinnerId,
+        oddsPreset,
+        specialtyBoost,
+      };
       try {
         const result = runRandomizer({ pool, context, rng });
         if (result.status === "OK") {
@@ -157,7 +191,7 @@ export function useGame() {
         setSpinError("Chưa thể chọn món ngẫu nhiên. Hãy thử mở hộp lại.");
       }
     },
-    [game.draftFilters, rng],
+    [game.draftFilters, rng, oddsPreset, specialtyBoost],
   );
 
   const open = useCallback(
@@ -239,6 +273,8 @@ export function useGame() {
     setBackgroundId(defaults.backgroundId);
     setRevealThemeIdState(defaults.revealThemeId);
     setReducedMotionOverrideState(defaults.reducedMotionOverride);
+    setOddsPresetState(defaults.oddsPreset);
+    setSpecialtyBoostState(defaults.specialtyBoost);
     dispatch({ type: "ACCEPT" });
     dispatch({ type: "SET_FILTERS", patch: defaults.filters });
   }, []);
@@ -270,6 +306,8 @@ export function useGame() {
     backgroundId,
     revealThemeId,
     reducedMotionOverride,
+    oddsPreset,
+    specialtyBoost,
     combinedPool,
     eligiblePreviewPool,
     setFilters,
@@ -277,6 +315,8 @@ export function useGame() {
     setBackground,
     setRevealTheme,
     setReducedMotionOverride,
+    setOddsPreset,
+    setSpecialtyBoost,
     open,
     respin,
     landed,

@@ -143,7 +143,7 @@ export function AppHeader({
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-white group-hover:text-teal-300 transition-colors">Tỉ lệ mở hòm</div>
-                      <div className="text-[11px] text-ink-500 truncate">Xem xác suất rơi món theo bộ lọc</div>
+                      <div className="text-[11px] text-ink-500 truncate">Xác suất & tuỳ chỉnh chế độ mở hòm</div>
                     </div>
                     <span className="text-ink-700 group-hover:text-white transition-colors text-xs">→</span>
                   </button>

@@ -5,6 +5,8 @@ import type { CandidateItem, ItemKind } from "@/data/catalog";
 
 export type BudgetMode = "NONE" | "HARD_MAX" | "TARGET";
 
+export type OddsPreset = "STANDARD" | "BALANCED" | "PREMIUM" | "EQUAL";
+
 export interface RandomizerContext {
   kind: ItemKind;
   categoryIds: string[];
@@ -14,6 +16,10 @@ export interface RandomizerContext {
   targetBudgetVnd?: number;
   /** v2 re-spin exclusion within a tier. Null/undefined on the first spin. */
   previousWinnerId?: string | null;
+  /** User-configured odds preset ("Phần tỉ lệ thì có setting riêng"). Defaults to STANDARD. */
+  oddsPreset?: OddsPreset;
+  /** Boost weight of regional specialties (x2 multiplier). */
+  specialtyBoost?: boolean;
 }
 
 export type FilterBlockerCode =

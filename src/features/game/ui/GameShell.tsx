@@ -45,11 +45,15 @@ export function GameShell() {
     backgroundId,
     revealThemeId,
     reducedMotionOverride,
+    oddsPreset,
+    specialtyBoost,
     setFilters,
     setSound,
     setBackground,
     setRevealTheme,
     setReducedMotionOverride,
+    setOddsPreset,
+    setSpecialtyBoost,
     open,
     respin,
     landed,
@@ -131,11 +135,16 @@ export function GameShell() {
 
   // Match the real draw after crate/context filters and same-tier repeat exclusion.
   const nextDrawOdds = useMemo(() => {
-    const context = { ...game.draftFilters, previousWinnerId };
+    const context = {
+      ...game.draftFilters,
+      previousWinnerId,
+      oddsPreset,
+      specialtyBoost,
+    };
     const { eligible } = applyHardFilters(currentEligiblePool, context);
     const eligiblePool = stableSortById(applyRespinExclusion(eligible, previousWinnerId));
     return { eligiblePool, probabilities: computeWeights(eligiblePool, context) };
-  }, [currentEligiblePool, game.draftFilters, previousWinnerId]);
+  }, [currentEligiblePool, game.draftFilters, previousWinnerId, oddsPreset, specialtyBoost]);
 
   const countsByCategory = useMemo(() => {
     const filteredPool = applyHardFilters(activeCratePool, { ...game.draftFilters, categoryIds: [] }).eligible;
@@ -340,8 +349,17 @@ export function GameShell() {
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-ink-500">
             <button
               type="button"
+              onClick={() => setOddsOpen(true)}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 hover:bg-canvas-200 hover:text-white transition-colors cursor-pointer"
+            >
+              <span>📊</span>
+              <span>Tỉ lệ mở hòm</span>
+            </button>
+            <span className="text-white/20">•</span>
+            <button
+              type="button"
               onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 hover:bg-canvas-200 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 hover:bg-canvas-200 hover:text-white transition-colors cursor-pointer"
             >
               <span>⚙️</span>
               <span>Cài đặt hệ thống</span>
@@ -380,11 +398,19 @@ export function GameShell() {
           onReset={handleReset}
         />
 
-        {/* Dedicated Odds Modal (User request: menu cài đặt và tỉ lệ không nên để chung với nhau) */}
+        {/* Dedicated Odds Modal (User request: "Tỉ lệ nên tách riêng ra. không nên để chung với cài đặt. Phần tỉ lệ thì có setting riêng") */}
         <OddsDialog
           open={oddsOpen}
           onOpenChange={setOddsOpen}
           odds={game.phase === "spinning" && game.frozenSelection ? game.frozenSelection : nextDrawOdds}
+          oddsPreset={oddsPreset}
+          onOddsPresetChange={setOddsPreset}
+          specialtyBoost={specialtyBoost}
+          onSpecialtyBoostChange={setSpecialtyBoost}
+          onResetOdds={() => {
+            setOddsPreset("STANDARD");
+            setSpecialtyBoost(false);
+          }}
         />
 
         {/* Pool Preferences Drawer */}

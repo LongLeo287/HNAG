@@ -39,6 +39,9 @@ export const PreferencesSchema = z.object({
   contextMealTime: z.enum(["AUTO", "BREAKFAST", "LUNCH", "AFTERNOON", "DINNER", "LATE_NIGHT", "ALL"]).default("AUTO"),
   contextDayType: z.enum(["AUTO", "WEEKDAY", "WEEKEND"]).default("AUTO"),
   contextAutoSyncTime: z.boolean().default(true),
+  // Odds settings ("Phần tỉ lệ thì có setting riêng")
+  oddsPreset: z.enum(["STANDARD", "BALANCED", "PREMIUM", "EQUAL"]).default("STANDARD"),
+  specialtyBoost: z.boolean().default(false),
 });
 export type Preferences = z.infer<typeof PreferencesSchema>;
 
@@ -63,4 +66,6 @@ export const DEFAULT_PREFERENCES: Preferences = {
   contextMealTime: "AUTO",
   contextDayType: "AUTO",
   contextAutoSyncTime: true,
+  oddsPreset: "STANDARD",
+  specialtyBoost: false,
 };
