@@ -1,6 +1,6 @@
 # 🍱 #HNAG — Hôm Nay Ăn Gì?
 
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://temporary-rushing-mauve-rcl7aq7.vercel.app/)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://homnayangi-vn.vercel.app/)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-LongLeo287%2FHNAG-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/LongLeo287/HNAG)
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -11,7 +11,7 @@
 
 > **Không biết ăn gì hay uống gì?** Hãy để **#HNAG** chốt giúp bạn chỉ với một lần mở hòm! Trò chơi quyết định món ăn phong cách mở hòm CS:GO / Blindbox đầu tiên dành cho ẩm thực Việt Nam, chạy 100% trên trình duyệt và không cần cài đặt.
 
-🌐 **Trải nghiệm ngay tại**: [https://temporary-rushing-mauve-rcl7aq7.vercel.app](https://temporary-rushing-mauve-rcl7aq7.vercel.app)
+🌐 **Trải nghiệm ngay tại**: [https://homnayangi-vn.vercel.app](https://homnayangi-vn.vercel.app)
 
 ---
 
