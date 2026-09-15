@@ -1,7 +1,7 @@
 {
   "name": "hnag",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "#HNAG (Hôm Nay Ăn Gì?) — Vietnam-first gamified food & drink random decision game.",
   "type": "module",
   "engines": {

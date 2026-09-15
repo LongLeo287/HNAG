@@ -5,6 +5,8 @@
 [![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-8.3-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Release](https://img.shields.io/badge/Release-v1.0.0-gold?style=for-the-badge)](https://github.com/LongLeo287/HNAG)
+[![Audit](https://img.shields.io/badge/Audit-Passed%20(15%2F09%2F2026)-blue?style=for-the-badge)](./docs/local-audit-2026-09-15.md)
 [![Tests](https://img.shields.io/badge/Tests-103%20Passed-22c55e?style=for-the-badge&logo=vitest&logoColor=white)](https://vitest.dev/)
 
 > **Không biết ăn gì hay uống gì?** Hãy để **#HNAG** chốt giúp bạn chỉ với một lần mở hòm! Trò chơi quyết định món ăn phong cách mở hòm CS:GO / Blindbox đầu tiên dành cho ẩm thực Việt Nam, chạy 100% trên trình duyệt và không cần cài đặt.
