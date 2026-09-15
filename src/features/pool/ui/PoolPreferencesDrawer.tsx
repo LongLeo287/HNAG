@@ -16,6 +16,8 @@ interface PoolPreferencesDrawerProps {
   onAddCustom: (input: CustomItemInput) => AddCustomItemResult;
   onRemoveCustom: (itemId: string) => void;
   onReset: () => void;
+  activeTab?: "add" | "builtin";
+  onTabChange?: (tab: "add" | "builtin") => void;
 }
 
 /** UI-050: manage the personal pool without leaving the game — cleanly separated into Add Custom Dish and Built-in Disables tabs. */
@@ -28,8 +30,13 @@ export function PoolPreferencesDrawer({
   onAddCustom,
   onRemoveCustom,
   onReset,
+  activeTab = "add",
+  onTabChange,
 }: PoolPreferencesDrawerProps) {
-  const [activeTab, setActiveTab] = useState<"add" | "builtin">("add");
+  const [internalTab, setInternalTab] = useState<"add" | "builtin">("add");
+  const currentTab = onTabChange ? activeTab : internalTab;
+  const setTab = onTabChange ?? setInternalTab;
+
   const builtIns = combinedPool.filter((item) => item.origin === "BUNDLED" && item.kind === kind);
   const custom = combinedPool.filter((item) => item.origin === "CUSTOM" && item.kind === kind);
 
@@ -41,10 +48,10 @@ export function PoolPreferencesDrawer({
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === "add"}
-            onClick={() => setActiveTab("add")}
+            aria-selected={currentTab === "add"}
+            onClick={() => setTab("add")}
             className={`flex-1 pb-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-              activeTab === "add"
+              currentTab === "add"
                 ? "border-gold-400 text-gold-400"
                 : "border-transparent text-ink-500 hover:text-white"
             }`}
@@ -61,10 +68,10 @@ export function PoolPreferencesDrawer({
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === "builtin"}
-            onClick={() => setActiveTab("builtin")}
+            aria-selected={currentTab === "builtin"}
+            onClick={() => setTab("builtin")}
             className={`flex-1 pb-3 text-sm font-bold text-center border-b-2 transition-colors flex items-center justify-center gap-1.5 ${
-              activeTab === "builtin"
+              currentTab === "builtin"
                 ? "border-gold-400 text-gold-400"
                 : "border-transparent text-ink-500 hover:text-white"
             }`}
@@ -75,7 +82,7 @@ export function PoolPreferencesDrawer({
         </div>
 
         {/* TAB 1: ADD CUSTOM DISHES */}
-        {activeTab === "add" && (
+        {currentTab === "add" && (
           <div className="flex flex-col gap-4">
             <p className="text-xs text-ink-500">
               Thêm món ăn hoặc quán quen yêu thích của bạn vào danh sách quay thưởng.
@@ -131,7 +138,7 @@ export function PoolPreferencesDrawer({
         )}
 
         {/* TAB 2: BUILT-IN DISHES TOGGLE LIST */}
-        {activeTab === "builtin" && (
+        {currentTab === "builtin" && (
           <div className="flex flex-col gap-4">
             <div className="rounded-xl border border-gold-500/20 bg-gold-500/10 p-3 text-xs text-gold-400">
               💡 <strong>Mẹo:</strong> Tắt bớt những món bạn không thích ăn hoặc bị dị ứng để vòng quay không bao giờ chọn trúng món đó.

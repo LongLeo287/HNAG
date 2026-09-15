@@ -62,6 +62,7 @@ export function GameShell() {
   const audio = useGameAudio(soundEnabled);
   const reducedMotion = useReducedMotion(reducedMotionOverride);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [preferencesTab, setPreferencesTab] = useState<"add" | "builtin">("add");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [poolPreviewOpen, setPoolPreviewOpen] = useState(false);
 
@@ -185,8 +186,12 @@ export function GameShell() {
       <AppHeader
         soundEnabled={soundEnabled}
         onSoundChange={setSound}
-        onOpenPreferences={() => setDrawerOpen(true)}
+        onOpenPreferences={(tab) => {
+          if (tab) setPreferencesTab(tab);
+          setDrawerOpen(true);
+        }}
         onOpenSettings={() => setSettingsOpen((prev) => !prev)}
+        onOpenOdds={() => setSettingsOpen(true)}
         spinCount={spinCount}
         preferencesDisabled={game.phase === "spinning"}
       />
@@ -342,10 +347,14 @@ export function GameShell() {
             <span className="text-white/20">•</span>
             <button
               type="button"
-              onClick={() => setDrawerOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 hover:bg-canvas-200 hover:text-white transition-colors"
+              aria-label="Thực đơn của tôi"
+              onClick={() => {
+                setPreferencesTab("add");
+                setDrawerOpen(true);
+              }}
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 hover:bg-canvas-200 hover:text-white transition-colors cursor-pointer"
             >
-              <span>📋</span>
+              <span aria-hidden="true">📋</span>
               <span>Thực đơn của tôi</span>
             </button>
           </div>
@@ -380,6 +389,8 @@ export function GameShell() {
           onAddCustom={addCustom}
           onRemoveCustom={removeCustom}
           onReset={handleReset}
+          activeTab={preferencesTab}
+          onTabChange={setPreferencesTab}
         />
       </main>
     </div>
