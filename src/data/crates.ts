@@ -3,6 +3,7 @@ import type { CandidateItem, ItemKind } from "./catalog";
 export type CrateId =
   | "crate_food"
   | "crate_drink"
+  | "crate_alcohol"
   | "crate_snack"
   | "crate_drinking"
   | "crate_vegetarian";
@@ -37,7 +38,7 @@ export interface CrateDefinition {
   };
 }
 
-export const CRATES: readonly CrateDefinition[] = [
+const BASE_CRATES: readonly CrateDefinition[] = [
   {
     id: "crate_food",
     name: "Hòm Bữa Chính",
@@ -61,7 +62,7 @@ export const CRATES: readonly CrateDefinition[] = [
     },
     filter: {
       kind: "FOOD",
-      categoryIds: ["com", "bun", "pho-mi", "chao-sup"],
+      categoryIds: ["com", "bun", "pho-mi", "chao-sup", "banh-mi", "mon-man", "fastfood"],
       vegetarianOnly: false,
     },
   },
@@ -88,7 +89,7 @@ export const CRATES: readonly CrateDefinition[] = [
     },
     filter: {
       kind: "DRINK",
-      categoryIds: [],
+      categoryIds: ["cafe", "tra-sua", "tra", "ep-sinh-to", "da-xay", "nuoc-khac"],
       vegetarianOnly: false,
     },
   },
@@ -115,7 +116,7 @@ export const CRATES: readonly CrateDefinition[] = [
     },
     filter: {
       kind: "FOOD",
-      categoryIds: ["an-vat", "banh", "fastfood"],
+      categoryIds: ["an-vat", "banh", "trang-mieng"],
       vegetarianOnly: false,
     },
   },
@@ -151,8 +152,8 @@ export const CRATES: readonly CrateDefinition[] = [
     name: "Hòm Đồ Chay",
     shortName: "Đồ Chay",
     codeName: "CASE // VEG-05",
-    tagline: "Thuần chay, thanh đạm, tươi ngon",
-    description: "Lựa chọn thanh tịnh cho cơ thể nhẹ nhàng, thơm lành từ rau củ tự nhiên",
+    tagline: "Các món có lựa chọn phiên bản chay",
+    description: "Danh sách món có thể chọn phiên bản chay; hãy xác nhận thành phần khi gọi món",
     icon: "🥗",
     imageSrc: "/images/crates/veg.jpg",
     theme: {
@@ -174,6 +175,21 @@ export const CRATES: readonly CrateDefinition[] = [
     },
   },
 ] as const;
+
+// A distinct beverage crate prevents alcohol from appearing among refreshments.
+const refreshmentCrate = BASE_CRATES.find((crate) => crate.id === "crate_drink")!;
+export const CRATES: readonly CrateDefinition[] = [...BASE_CRATES, {
+  ...refreshmentCrate,
+  id: "crate_alcohol", name: "Hòm Đồ Uống Có Cồn", shortName: "Có Cồn",
+  codeName: "CASE // DRINK-06", icon: "🍷",
+  tagline: "Rượu, bia và cocktail — chọn riêng",
+  description: "Nhóm đồ uống có cồn, tách khỏi hòm giải khát và các hòm món ăn",
+  filter: { kind: "DRINK", categoryIds: ["co-con"], vegetarianOnly: false },
+}];
+
+export function cratesForKind(kind: ItemKind): CrateDefinition[] {
+  return CRATES.filter((crate) => crate.filter.kind === kind);
+}
 
 export const DEFAULT_CRATE_ID: CrateId = "crate_food";
 

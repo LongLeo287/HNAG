@@ -6,6 +6,7 @@ import { buildIdleSlots } from "./geometry";
 
 interface IdleReelProps {
   items: CandidateItem[];
+  probabilities?: number[];
   winnerItem?: CandidateItem | null;
 }
 
@@ -14,15 +15,15 @@ interface IdleReelProps {
  * Shows the items currently loaded inside the crate awaiting the OPEN command,
  * or stays landed on the winnerItem when the spin has completed.
  */
-export function IdleReel({ items, winnerItem }: IdleReelProps) {
+export function IdleReel({ items, winnerItem, probabilities }: IdleReelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [offsetPx, setOffsetPx] = useState(0);
 
   // Generate a balanced, dynamically randomized strip for preview
   const displayItems = useMemo(
-    () => buildIdleSlots(items, winnerItem),
-    [items, winnerItem],
+    () => buildIdleSlots(items, winnerItem, probabilities),
+    [items, winnerItem, probabilities],
   );
 
   const winnerIndex = useMemo(() => {

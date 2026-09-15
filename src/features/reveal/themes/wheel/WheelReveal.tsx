@@ -33,7 +33,7 @@ export function WheelReveal({ frozenSelection, decoyPool, onTick, onLanded }: Wh
   const landedRef = useRef(false);
 
   const segments = useMemo(
-    () => buildWheelSegments(frozenSelection.winner, decoyPool),
+    () => buildWheelSegments(frozenSelection.winner, decoyPool, frozenSelection.probabilities),
     [frozenSelection, decoyPool],
   );
 

@@ -9,7 +9,7 @@ import { MAX_CUSTOM_ITEMS, type PoolProfile } from "./types";
 export function combinePool(bundled: CandidateItem[], profile: PoolProfile): CandidateItem[] {
   const bundledWithState = bundled.map((item) => ({
     ...item,
-    enabled: !profile.disabledBuiltInIds.includes(item.id),
+    enabled: item.enabled && !profile.disabledBuiltInIds.includes(item.id),
   }));
   return [...bundledWithState, ...profile.customItems];
 }

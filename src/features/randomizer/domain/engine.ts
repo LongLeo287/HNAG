@@ -1,7 +1,7 @@
 import type { CandidateItem } from "@/data/catalog";
 import { applyHardFilters, applyRespinExclusion, stableSortById } from "./eligibility";
 import { computeWeights } from "./weighting";
-import { drawPureRandom, drawWeighted } from "./draw";
+import { drawWeighted } from "./draw";
 import type { RandomizerContext, RandomizerResult, UniformRng } from "./types";
 
 export interface RunRandomizerInput {
@@ -27,15 +27,15 @@ export function runRandomizer({ pool, context, rng }: RunRandomizerInput): Rando
   const eligible = stableSortById(eligibleAfterRespin);
   const weights = computeWeights(eligible, context);
 
-  const isTarget = context.budgetMode === "TARGET" && context.targetBudgetVnd !== undefined;
-  const winner = isTarget ? drawWeighted(eligible, weights, rng) : drawPureRandom(eligible, rng);
+  const winner = drawWeighted(eligible, weights, rng);
 
   return {
     status: "OK",
     selection: {
-      algorithmVersion: "randomizer-v1.0.0",
+      algorithmVersion: "randomizer-v2.1.0",
       winner,
       eligiblePool: eligible,
+      probabilities: weights,
       context,
       frozenAtMs: Date.now(),
     },

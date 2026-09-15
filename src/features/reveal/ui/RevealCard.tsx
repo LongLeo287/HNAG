@@ -6,6 +6,8 @@ import { cx } from "@/lib/cx";
 
 interface RevealCardProps {
   winner: CandidateItem;
+  reducedMotion?: boolean;
+  winningProbability?: number;
 }
 
 function formatPrice(priceVnd: number | null): string {
@@ -14,16 +16,24 @@ function formatPrice(priceVnd: number | null): string {
 }
 
 /** UI-011/FEAT-009: The grand payoff — CS:GO style victory unboxing presentation. */
-export function RevealCard({ winner }: RevealCardProps) {
+export function RevealCard({ winner, reducedMotion = false, winningProbability }: RevealCardProps) {
   const rarity = RARITY_STYLE[winner.rarity as RarityTier];
   const categoryName = categoryLabel(winner.categoryId);
+  const specialty = winner.regionalSpecialty;
 
   return (
-    <div className="animate-reveal-in relative flex w-full flex-col items-center text-center">
+    <div data-testid="winner-card" data-item-kind={winner.kind} data-category-id={winner.categoryId} data-item-id={winner.id} data-specialty-region={specialty?.region}
+      className={cx("relative flex w-full flex-col items-center text-center", !reducedMotion && "animate-reveal-in",
+        specialty && "specialty-card rounded-2xl border p-3", specialty && !reducedMotion && "specialty-reveal")}>
+      {specialty && <div className="specialty-seal mb-3 flex w-full flex-col items-center rounded-xl border px-3 py-2">
+        <span className="text-[10px] font-bold uppercase tracking-[0.2em]">✦ Đặc sản vùng miền ✦</span>
+        <span className="mt-1 text-lg font-black">{specialty.locality}</span>
+        <span className="text-[10px]">{specialty.region === "NORTH" ? "Miền Bắc" : specialty.region === "CENTRAL" ? "Miền Trung" : "Miền Nam"}</span>
+      </div>}
       {/* Background Victory Beams / Rays */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-10 -z-10 flex items-center justify-center opacity-70"
+        className="pointer-events-none absolute inset-x-0 -inset-y-10 -z-10 flex items-center justify-center opacity-70"
       >
         <div
           className={cx(
@@ -112,6 +122,12 @@ export function RevealCard({ winner }: RevealCardProps) {
         Giá tham khảo, ảnh minh hoạ.
         {winner.vegetarianPossible && " Chọn phiên bản chay khi gọi món."}
       </p>
+      {winningProbability !== undefined && <p data-testid="winner-probability" className="mb-2 text-xs text-ink-500">
+        Tỉ lệ món này ở lượt vừa mở: {(winningProbability * 100).toLocaleString("vi-VN", { maximumFractionDigits: 3 })}%
+      </p>}
+      {specialty && <a href={specialty.sourceUrl} target="_blank" rel="noreferrer" className="mb-2 text-xs text-teal-300 underline">
+        Tìm hiểu nguồn gốc món · Vietnam Tourism
+      </a>}
     </div>
   );
 }

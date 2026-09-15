@@ -9,14 +9,14 @@ export type ItemKind = z.infer<typeof ItemKind>;
 export const RarityTier = z.enum(["THUONG", "NGON", "DINH", "HUYEN_THOAI"]);
 export type RarityTier = z.infer<typeof RarityTier>;
 
-// RANK-029: rarity is presentation flavor only. Order here is display order, not a value ranking.
+// v2: rarity controls draw frequency, not food quality or monetary value. Keep persisted keys stable.
 export const RARITY_ORDER: readonly RarityTier[] = ["THUONG", "NGON", "DINH", "HUYEN_THOAI"];
 
 export const RARITY_LABEL: Record<RarityTier, string> = {
   THUONG: "Thường",
-  NGON: "Ngon",
-  DINH: "Đỉnh",
-  HUYEN_THOAI: "Huyền Thoại",
+  NGON: "Hiếm",
+  DINH: "Siêu hiếm",
+  HUYEN_THOAI: "Huyền thoại",
 };
 
 // Integer VND. Unknown price is null — RANK-009 forbids inferring 0.
@@ -44,6 +44,12 @@ export const CandidateItemSchema = z.object({
   weatherSuitability: z.enum(["ANY", "RAINY_COOL", "SUNNY_HOT"]).optional(),
   daySuitability: z.enum(["ANY", "WEEKDAY", "WEEKEND"]).optional(),
   description: z.string().optional(),
+  regionalSpecialty: z.object({
+    familyId: z.string().min(1),
+    locality: z.string().min(1),
+    region: z.enum(["NORTH", "CENTRAL", "SOUTH"]),
+    sourceUrl: z.string().url(),
+  }).optional(),
 });
 export type CandidateItem = z.infer<typeof CandidateItemSchema>;
 

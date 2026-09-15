@@ -58,7 +58,7 @@ export function useGame() {
   const [reducedMotionOverride, setReducedMotionOverrideState] = useState(
     () => loadPreferences().reducedMotionOverride,
   );
-  const previousWinnerIdRef = useRef<string | null>(null);
+  const [previousWinnerId, setPreviousWinnerId] = useState<string | null>(null);
   const profileRef = useRef(profile);
   const spinInFlight = useRef(false);
   const [spinCount, setSpinCount] = useState(loadSpinCount);
@@ -149,7 +149,7 @@ export function useGame() {
       try {
         const result = runRandomizer({ pool, context, rng });
         if (result.status === "OK") {
-          previousWinnerIdRef.current = result.selection.winner.id;
+          setPreviousWinnerId(result.selection.winner.id);
           spinInFlight.current = true;
         }
         dispatch({ type: "RESULT", result });
@@ -161,12 +161,12 @@ export function useGame() {
   );
 
   const open = useCallback(
-    (poolOverride?: CandidateItem[]) => spin(previousWinnerIdRef.current, poolOverride),
-    [spin],
+    (poolOverride?: CandidateItem[]) => spin(previousWinnerId, poolOverride),
+    [spin, previousWinnerId],
   );
   const respin = useCallback(
-    (poolOverride?: CandidateItem[]) => spin(previousWinnerIdRef.current, poolOverride),
-    [spin],
+    (poolOverride?: CandidateItem[]) => spin(previousWinnerId, poolOverride),
+    [spin, previousWinnerId],
   );
   const landed = useCallback(() => {
     if (!spinInFlight.current) return;
@@ -230,7 +230,7 @@ export function useGame() {
     profileRef.current = nextProfile;
     setProfile(nextProfile);
     setSpinError(null);
-    previousWinnerIdRef.current = null;
+    setPreviousWinnerId(null);
     spinCountRef.current = 0;
     setSpinCount(0);
     setCountSaved(saveSpinCount(0));
@@ -262,6 +262,7 @@ export function useGame() {
   return {
     game,
     spinCount,
+    previousWinnerId,
     storageAvailable: preferencesSaved && countSaved,
     spinError,
     profile,

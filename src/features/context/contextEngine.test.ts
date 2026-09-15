@@ -8,7 +8,7 @@ import {
   resolveContext,
 } from "./contextEngine";
 import type { CandidateItem } from "@/data/catalog";
-import type { ContextFilters } from "./types";
+import { DEFAULT_CONTEXT_FILTERS, type ContextFilters } from "./types";
 
 const makeMockItem = (overrides: Partial<CandidateItem> = {}): CandidateItem => ({
   id: "test-item-1",
@@ -47,8 +47,8 @@ describe("contextEngine - pure time & day detection", () => {
     expect(detectDayType(new Date("2026-09-07T10:00:00"))).toBe("WEEKDAY");
     // 2026-09-11 is Friday 14:00 (before 17:00)
     expect(detectDayType(new Date("2026-09-11T14:00:00"))).toBe("WEEKDAY");
-    // 2026-09-11 is Friday 18:00 (party starts!)
-    expect(detectDayType(new Date("2026-09-11T18:00:00"))).toBe("WEEKEND");
+    // Friday evening is still a calendar weekday.
+    expect(detectDayType(new Date("2026-09-11T18:00:00"))).toBe("WEEKDAY");
     // 2026-09-12 is Saturday
     expect(detectDayType(new Date("2026-09-12T12:00:00"))).toBe("WEEKEND");
     // 2026-09-13 is Sunday
@@ -73,6 +73,11 @@ describe("contextEngine - pure time & day detection", () => {
 });
 
 describe("contextEngine - item filtering & matching", () => {
+  it("never guesses weather from the hour when no provider data exists", () => {
+    for (const hour of [0, 7, 12, 18, 23]) {
+      expect(resolveContext(DEFAULT_CONTEXT_FILTERS, new Date(2026, 8, 14, hour)).weather).toBe("UNKNOWN");
+    }
+  });
   it("matches location for exact province and national items", () => {
     const hanoiDish = makeMockItem({ province: "Hà Nội" });
     const saigonDish = makeMockItem({ province: "TP. Hồ Chí Minh" });
@@ -93,7 +98,7 @@ describe("contextEngine - item filtering & matching", () => {
     expect(matchesMealTime(lateNightOnly, "LATE_NIGHT")).toBe(true);
   });
 
-  it("gracefully falls back when filters are extremely narrow so pool is never empty", () => {
+  it("does not quietly replace an empty contextual pool with unrelated items", () => {
     const sampleItems = [
       makeMockItem({ id: "1", province: "Hà Nội", mealTimes: ["Ăn sáng"] }),
       makeMockItem({ id: "2", province: "TP. Hồ Chí Minh", mealTimes: ["Ăn trưa"] }),
@@ -107,6 +112,6 @@ describe("contextEngine - item filtering & matching", () => {
       isAutoDetected: false,
     });
 
-    expect(result.length).toBeGreaterThan(0);
+    expect(result).toEqual([]);
   });
 });

@@ -51,7 +51,29 @@ describe("GameAudio (QA-024: audio-unavailable resilience)", () => {
     audio.setEnabled(false);
     audio.playTick();
     audio.playReveal();
+    audio.playReveal("HUYEN_THOAI", "CENTRAL");
 
     expect(createOscillator).not.toHaveBeenCalled();
+  });
+
+  it("adds an original regional chime only for a specialty, with different region notes", () => {
+    const frequencies: number[] = [];
+    const parameter = () => ({setValueAtTime:vi.fn(),linearRampToValueAtTime:vi.fn(),exponentialRampToValueAtTime:vi.fn()});
+    const gainNode = {gain:parameter(),connect:vi.fn()};
+    window.AudioContext = vi.fn(function () { return {state:"running",currentTime:0,destination:{},
+      createGain:()=>gainNode, createOscillator:()=>({frequency:{...parameter(),setValueAtTime:(hz:number)=>frequencies.push(hz)},connect:()=>gainNode,start:vi.fn(),stop:vi.fn()}),
+    }; }) as unknown as typeof AudioContext;
+    const audio = createGameAudio();
+    audio.setEnabled(true);
+    audio.playReveal("THUONG");
+    expect(frequencies).toEqual([660,880]);
+    frequencies.length = 0;
+    audio.playReveal("THUONG","CENTRAL");
+    expect(frequencies.slice(0,2)).toEqual([660,880]);
+    const centralNotes = frequencies.slice(2);
+    expect(centralNotes).toHaveLength(4);
+    frequencies.length = 0;
+    audio.playReveal("THUONG","NORTH");
+    expect(frequencies.slice(2)).not.toEqual(centralNotes);
   });
 });

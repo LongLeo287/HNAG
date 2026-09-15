@@ -24,7 +24,8 @@ export function updateDraftFilters(
   if (state.phase === "spinning") return state; // CODE controls locked mid-spin.
   return {
     ...state,
-    phase: state.phase === "blocked" ? "configuring" : state.phase,
+    phase: "configuring",
+    frozenSelection: null,
     draftFilters: { ...state.draftFilters, ...patch },
     blockedDiagnostics: null,
   };

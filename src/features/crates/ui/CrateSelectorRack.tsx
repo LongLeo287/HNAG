@@ -1,7 +1,9 @@
-import { CRATES, type CrateId } from "@/data/crates";
+import { cratesForKind, type CrateId } from "@/data/crates";
+import type { ItemKind } from "@/data/catalog";
 import { CrateCard } from "./CrateCard";
 
 interface CrateSelectorRackProps {
+  kind: ItemKind;
   selectedCrateId: CrateId;
   countsByCrate: Record<CrateId, number>;
   disabled?: boolean;
@@ -14,6 +16,7 @@ interface CrateSelectorRackProps {
  * Users pick which case they want to open before inspecting the candidate reel.
  */
 export function CrateSelectorRack({
+  kind,
   selectedCrateId,
   countsByCrate,
   disabled = false,
@@ -31,7 +34,7 @@ export function CrateSelectorRack({
             📦
           </span>
           <h2 className="text-xs sm:text-sm font-black tracking-widest text-ink-700 uppercase">
-            CHỌN HÒM TIẾP TẾ
+            {kind === "FOOD" ? "CHỌN HÒM MÓN ĂN" : "CHỌN HÒM ĐỒ UỐNG"}
           </h2>
         </div>
       </div>
@@ -40,9 +43,9 @@ export function CrateSelectorRack({
       <div
         role="radiogroup"
         aria-label="Danh sách hòm tiếp tế"
-        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 overflow-x-auto pb-1 pt-1"
+        className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 pb-1 pt-1"
       >
-        {CRATES.map((crate) => (
+        {cratesForKind(kind).map((crate) => (
           <CrateCard
             key={crate.id}
             crate={crate}

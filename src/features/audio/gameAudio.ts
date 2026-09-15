@@ -1,4 +1,5 @@
-import type { RarityTier } from "@/data/catalog";
+import type { CandidateItem, RarityTier } from "@/data/catalog";
+type SpecialtyRegion = NonNullable<CandidateItem["regionalSpecialty"]>["region"];
 
 /**
  * RS-052/FEAT-048/CODE-036: tiny game-audio abstraction.
@@ -23,7 +24,7 @@ export interface GameAudio {
   playCrateOpen(): void;
   playEquipCrate(): void;
   playTick(): void;
-  playReveal(rarity?: RarityTier): void;
+  playReveal(rarity?: RarityTier, specialtyRegion?: SpecialtyRegion): void;
   setEnabled(enabled: boolean): void;
   isEnabled(): boolean;
 }
@@ -34,6 +35,10 @@ const TICK_DURATION_S = 0.028;
 const REVEAL_NOTE_DURATION_S = 0.13;
 const GAIN_WHEN_ON = 0.2;
 const SWEEP_GAIN = 0.1;
+// Original UI chimes, not recordings or claims of traditional regional music.
+const SPECIALTY_CHIME: Record<SpecialtyRegion, readonly number[]> = {
+  NORTH: [587, 784, 880, 1175], CENTRAL: [622, 830, 933, 1244], SOUTH: [659, 880, 988, 1319],
+};
 
 /** Original ascending chords per tier — richer/longer for rarer results, never a value/quality claim (RANK-029). */
 const REVEAL_CHORD_HZ: Record<RarityTier, number[]> = {
@@ -150,7 +155,7 @@ export function createGameAudio(): GameAudio {
         gain: GAIN_WHEN_ON * 1.35,
       });
     },
-    playReveal(rarity: RarityTier = "THUONG") {
+    playReveal(rarity: RarityTier = "THUONG", specialtyRegion?: SpecialtyRegion) {
       if (!enabled) return;
       const ctx = ensureContext();
       if (!ctx || ctx.state !== "running") return;
@@ -161,6 +166,9 @@ export function createGameAudio(): GameAudio {
       const chordStartAt = now + sweepS * 0.7;
       REVEAL_CHORD_HZ[rarity].forEach((frequencyHz, index) => {
         playTone(frequencyHz, chordStartAt + index * 0.09, REVEAL_NOTE_DURATION_S, ctx);
+      });
+      if (specialtyRegion) SPECIALTY_CHIME[specialtyRegion].forEach((frequencyHz, index) => {
+        playTone(frequencyHz, chordStartAt + 0.48 + index * 0.08, 0.18, ctx, { type: "triangle", gain: 0.08 });
       });
     },
     setEnabled(value: boolean) {

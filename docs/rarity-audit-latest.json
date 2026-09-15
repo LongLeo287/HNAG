@@ -1,0 +1,168 @@
+{
+  "catalogSize": 1731,
+  "catalogTierCounts": {
+    "THUONG": 1413,
+    "NGON": 114,
+    "DINH": 193,
+    "HUYEN_THOAI": 11
+  },
+  "smartContext": {
+    "mealTime": "BREAKFAST",
+    "weather": "SUNNY_HOT",
+    "dayType": "WEEKEND",
+    "location": "ALL",
+    "isAutoDetected": false
+  },
+  "rows": [
+    {
+      "crate": "crate_food",
+      "eligible": 301,
+      "tierCounts": {
+        "THUONG": 195,
+        "NGON": 31,
+        "DINH": 74,
+        "HUYEN_THOAI": 1
+      },
+      "oldUniformHighTierPercent": 24.9169,
+      "expectedPercent": {
+        "THUONG": 80,
+        "NGON": 16,
+        "DINH": 3.5,
+        "HUYEN_THOAI": 0.5
+      },
+      "draws": 20000,
+      "observed": {
+        "THUONG": 16026,
+        "NGON": 3149,
+        "DINH": 702,
+        "HUYEN_THOAI": 123
+      },
+      "observedPercent": {
+        "THUONG": 80.13,
+        "NGON": 15.745,
+        "DINH": 3.51,
+        "HUYEN_THOAI": 0.615
+      }
+    },
+    {
+      "crate": "crate_drink",
+      "eligible": 43,
+      "tierCounts": {
+        "THUONG": 24,
+        "NGON": 12,
+        "DINH": 6,
+        "HUYEN_THOAI": 1
+      },
+      "oldUniformHighTierPercent": 16.2791,
+      "expectedPercent": {
+        "THUONG": 80,
+        "NGON": 16,
+        "DINH": 3.5,
+        "HUYEN_THOAI": 0.5
+      },
+      "draws": 20000,
+      "observed": {
+        "THUONG": 15883,
+        "NGON": 3270,
+        "DINH": 761,
+        "HUYEN_THOAI": 86
+      },
+      "observedPercent": {
+        "THUONG": 79.415,
+        "NGON": 16.35,
+        "DINH": 3.805,
+        "HUYEN_THOAI": 0.43
+      }
+    },
+    {
+      "crate": "crate_snack",
+      "eligible": 148,
+      "tierCounts": {
+        "THUONG": 138,
+        "NGON": 7,
+        "DINH": 3,
+        "HUYEN_THOAI": 0
+      },
+      "oldUniformHighTierPercent": 2.027,
+      "expectedPercent": {
+        "THUONG": 80.402,
+        "NGON": 16.0804,
+        "DINH": 3.5176,
+        "HUYEN_THOAI": 0
+      },
+      "draws": 20000,
+      "observed": {
+        "THUONG": 16112,
+        "NGON": 3182,
+        "DINH": 706,
+        "HUYEN_THOAI": 0
+      },
+      "observedPercent": {
+        "THUONG": 80.56,
+        "NGON": 15.91,
+        "DINH": 3.53,
+        "HUYEN_THOAI": 0
+      }
+    },
+    {
+      "crate": "crate_drinking",
+      "eligible": 33,
+      "tierCounts": {
+        "THUONG": 25,
+        "NGON": 2,
+        "DINH": 4,
+        "HUYEN_THOAI": 2
+      },
+      "oldUniformHighTierPercent": 18.1818,
+      "expectedPercent": {
+        "THUONG": 80,
+        "NGON": 16,
+        "DINH": 3.5,
+        "HUYEN_THOAI": 0.5
+      },
+      "draws": 20000,
+      "observed": {
+        "THUONG": 15965,
+        "NGON": 3216,
+        "DINH": 711,
+        "HUYEN_THOAI": 108
+      },
+      "observedPercent": {
+        "THUONG": 79.825,
+        "NGON": 16.08,
+        "DINH": 3.555,
+        "HUYEN_THOAI": 0.54
+      }
+    },
+    {
+      "crate": "crate_vegetarian",
+      "eligible": 18,
+      "tierCounts": {
+        "THUONG": 13,
+        "NGON": 5,
+        "DINH": 0,
+        "HUYEN_THOAI": 0
+      },
+      "oldUniformHighTierPercent": 0,
+      "expectedPercent": {
+        "THUONG": 83.3333,
+        "NGON": 16.6667,
+        "DINH": 0,
+        "HUYEN_THOAI": 0
+      },
+      "draws": 20000,
+      "observed": {
+        "THUONG": 16694,
+        "NGON": 3306,
+        "DINH": 0,
+        "HUYEN_THOAI": 0
+      },
+      "observedPercent": {
+        "THUONG": 83.47,
+        "NGON": 16.53,
+        "DINH": 0,
+        "HUYEN_THOAI": 0
+      }
+    }
+  ]
+}

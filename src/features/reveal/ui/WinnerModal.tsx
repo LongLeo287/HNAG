@@ -3,10 +3,15 @@ import { createPortal } from "react-dom";
 import type { CandidateItem } from "@/data/catalog";
 import { RevealCard } from "./RevealCard";
 import { ResultActions } from "./ResultActions";
+import type { DrawOdds } from "@/features/randomizer/domain";
+import { RARITY_STYLE } from "@/lib/rarity";
 
 interface WinnerModalProps {
   open: boolean;
   winner: CandidateItem;
+  reducedMotion?: boolean;
+  winningProbability?: number;
+  respinOdds?: DrawOdds;
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
@@ -21,6 +26,9 @@ interface WinnerModalProps {
 export function WinnerModal({
   open,
   winner,
+  reducedMotion,
+  winningProbability,
+  respinOdds,
   onAccept,
   onRespin,
   onEditPool,
@@ -44,6 +52,7 @@ export function WinnerModal({
   }, [open, onClose]);
 
   if (!open || !mounted) return null;
+  const rarity = RARITY_STYLE[winner.rarity];
 
   return createPortal(
     <div
@@ -59,11 +68,11 @@ export function WinnerModal({
       />
 
       {/* Modal Dialog Box */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-gold-500/40 bg-[#0c1017]/98 p-4 sm:p-5 shadow-[0_0_80px_rgba(245,184,46,0.35)] backdrop-blur-2xl transition-all z-10 my-auto">
+      <div className={`relative w-full max-w-lg max-h-[calc(100dvh-1.5rem)] overflow-y-auto rounded-3xl border ${rarity.frameClass} ${rarity.glowClass} bg-[#0c1017]/98 p-4 sm:p-5 backdrop-blur-2xl transition-all z-10 my-auto`}>
         {/* Background Radiant Aura */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-64 w-80 rounded-full bg-gold-400/20 blur-3xl animate-pulse"
+          className={`pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2 h-64 w-80 max-w-full rounded-full ${rarity.barClass} opacity-20 blur-3xl`}
         />
 
         {/* Close Button */}
@@ -79,10 +88,11 @@ export function WinnerModal({
 
         {/* Content Body */}
         <div className="flex flex-col items-center justify-center">
-          <RevealCard winner={winner} />
+          <RevealCard winner={winner} reducedMotion={reducedMotion} winningProbability={winningProbability} />
 
           <ResultActions
             dishName={winner.name}
+            respinOdds={respinOdds}
             onAccept={onAccept}
             onRespin={onRespin}
             onEditPool={onEditPool}

@@ -1,9 +1,8 @@
-import { categoriesForKind } from "@/data/catalog";
-import type { ItemKind } from "@/data/catalog";
+import type { Category } from "@/data/catalog";
 import { Chip } from "@/components/ui/Chip";
 
 interface CategoryChipsProps {
-  kind: ItemKind;
+  categories: Category[];
   selected: string[];
   countsByCategory?: Record<string, number>;
   onChange: (categoryIds: string[]) => void;
@@ -23,16 +22,16 @@ const CATEGORY_EMOJIS: Record<string, string> = {
   tra: "🍵",
   "ep-sinh-to": "🥤",
   "da-xay": "🍧",
+  "banh-mi": "🥖", "mon-man": "🍽️", "trang-mieng": "🍮", "nuoc-khac": "🥛", "co-con": "🍷",
 };
 
 /** UI: FEAT-006. Multi-select category narrowing with emoji visual cues and real-time counts. */
 export function CategoryChips({
-  kind,
+  categories,
   selected,
   countsByCategory,
   onChange,
 }: CategoryChipsProps) {
-  const categories = categoriesForKind(kind);
 
   function toggle(categoryId: string) {
     onChange(

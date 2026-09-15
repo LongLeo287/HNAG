@@ -23,6 +23,7 @@ export const PreferencesSchema = z.object({
   filters: FiltersSchema,
   disabledBuiltInIds: z.array(z.string()),
   customItems: z.array(CandidateItemSchema),
+  selectedCrateId: z.enum(["crate_food", "crate_drink", "crate_alcohol", "crate_snack", "crate_drinking", "crate_vegetarian"]).optional(),
   // Purely cosmetic backdrop choice (user request 2026-09-11) — additive/defaulted field, so
   // preferences saved before this existed still parse without a version bump.
   backgroundId: z.enum(LANDMARK_IDS).default(DEFAULT_LANDMARK_ID),
@@ -30,7 +31,9 @@ export const PreferencesSchema = z.object({
   revealThemeId: z.enum(REVEAL_THEME_IDS).default(DEFAULT_REVEAL_THEME_ID),
   // Follow OS by default; explicit in-app choices may override it.
   reducedMotionOverride: z.boolean().nullable().default(null),
-  // Contextual smart preferences (User request: Meal time, weather, day of week, location)
+  // Device context consent only; coordinates and weather are never persisted.
+  contextDeviceEnabled: z.boolean().default(false),
+  // Legacy manual fields remain readable for migration, but no longer drive live context.
   contextLocation: z.string().default("ALL"),
   contextWeather: z.enum(["AUTO", "SUNNY_HOT", "RAINY_COOL", "MILD"]).default("AUTO"),
   contextMealTime: z.enum(["AUTO", "BREAKFAST", "LUNCH", "AFTERNOON", "DINNER", "LATE_NIGHT", "ALL"]).default("AUTO"),
@@ -54,6 +57,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   backgroundId: DEFAULT_LANDMARK_ID,
   revealThemeId: DEFAULT_REVEAL_THEME_ID,
   reducedMotionOverride: null,
+  contextDeviceEnabled: false,
   contextLocation: "ALL",
   contextWeather: "AUTO",
   contextMealTime: "AUTO",

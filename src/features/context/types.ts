@@ -4,7 +4,7 @@ export type ResolvedMealTime = "BREAKFAST" | "LUNCH" | "AFTERNOON" | "DINNER" | 
 
 export type WeatherCondition = "AUTO" | "SUNNY_HOT" | "RAINY_COOL" | "MILD";
 
-export type ResolvedWeather = "SUNNY_HOT" | "RAINY_COOL" | "MILD";
+export type ResolvedWeather = "SUNNY_HOT" | "RAINY_COOL" | "MILD" | "UNKNOWN";
 
 export type DayType = "AUTO" | "WEEKDAY" | "WEEKEND";
 
@@ -79,6 +79,7 @@ export const MEAL_TIME_INFO: Record<ResolvedMealTime, ContextOptionInfo> = {
 };
 
 export const WEATHER_INFO: Record<ResolvedWeather, ContextOptionInfo> = {
+  UNKNOWN: { id: "UNKNOWN", label: "Chưa có dữ liệu thời tiết", icon: "—" },
   SUNNY_HOT: {
     id: "SUNNY_HOT",
     label: "Trời nắng oi",
@@ -106,14 +107,14 @@ export const DAY_TYPE_INFO: Record<ResolvedDayType, ContextOptionInfo> = {
   WEEKDAY: {
     id: "WEEKDAY",
     label: "Ngày thường",
-    shortLabel: "Thứ 2 - 5",
+    shortLabel: "Thứ 2 - 6",
     icon: "💼",
     hint: "Bữa ăn tiện lợi, nhanh gọn, tiết kiệm thời gian công sở",
   },
   WEEKEND: {
     id: "WEEKEND",
     label: "Cuối tuần",
-    shortLabel: "T6 - CN",
+    shortLabel: "Thứ 7 - CN",
     icon: "🎉",
     hint: "Thời gian thư thả: ăn nhậu, lẩu nướng lai rai, cà phê chill",
   },

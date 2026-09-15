@@ -1,4 +1,5 @@
 import type { CandidateItem } from "@/data/catalog";
+import { sampleDecoy } from "../case-reel/decoys";
 
 export const WHEEL_SEGMENT_COUNT = 10;
 export const WHEEL_WINNER_INDEX = 0;
@@ -6,11 +7,11 @@ export const WHEEL_FULL_SPINS = 5;
 export const SEGMENT_ANGLE_DEG = 360 / WHEEL_SEGMENT_COUNT;
 
 /** Same shape as case-reel's buildReelSlots (RANK-022): only WHEEL_WINNER_INDEX carries meaning. */
-export function buildWheelSegments(winner: CandidateItem, decoyPool: CandidateItem[]): CandidateItem[] {
+export function buildWheelSegments(winner: CandidateItem, decoyPool: CandidateItem[], probabilities: number[] = []): CandidateItem[] {
   const pool = decoyPool.length > 0 ? decoyPool : [winner];
   return Array.from({ length: WHEEL_SEGMENT_COUNT }, (_, index) => {
     if (index === WHEEL_WINNER_INDEX) return winner;
-    const decoy = pool[Math.floor(Math.random() * pool.length)];
+    const decoy = sampleDecoy(pool, probabilities);
     return decoy ?? winner;
   });
 }

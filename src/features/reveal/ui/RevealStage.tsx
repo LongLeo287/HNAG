@@ -44,7 +44,7 @@ export function RevealStage({
   }, [phase, reducedMotion, spinProfile.durationMs, onLanded]);
 
   useEffect(() => {
-    if (phase === "revealed") audio.playReveal(frozenSelection.winner.rarity);
+    if (phase === "revealed") audio.playReveal(frozenSelection.winner.rarity, frozenSelection.winner.regionalSpecialty?.region);
   }, [phase, audio, frozenSelection]);
 
   if (phase === "spinning" && !reducedMotion) {
@@ -73,7 +73,7 @@ export function RevealStage({
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <RevealCard winner={frozenSelection.winner} />
+      <RevealCard winner={frozenSelection.winner} reducedMotion={reducedMotion} />
       <ResultActions
         dishName={frozenSelection.winner.name}
         onAccept={onAccept}

@@ -11,20 +11,41 @@ restaurant directory, catalog, or data platform. Core loop: choose FOOD/DRINK + 
 filters/personal pool → OPEN/SPIN → winner frozen → case-reel suspense → reveal → Accept or
 Re-spin.
 
+## Current rarity contract (user request, 2026-09-12)
+
+The user explicitly requested fewer high-rank outcomes on the current 1,731-item build.
+`randomizer-v2.1.0` supersedes the spreadsheet's uniform-per-item and presentation-only
+rarity rules: allocate 80% / 16% / 3.5% / 0.5% to available tiers, normalize missing tiers,
+then apply regional-specialty weight (0.5 versus ordinary 1) and TARGET price fit only
+inside each tier. These are relative item weights, not fixed aggregate specialty odds.
+Re-spin excludes the previous item
+only if another eligible item of that same tier exists. Display the actual filtered odds.
+Persisted rarity keys remain unchanged. See `docs/rarity-latest-plan.md`.
+
 ## Permanent invariants (do not relitigate these)
 
 - No cart/order/checkout/payment/wallet/delivery-tracking, ever, in any phase (`CODE-024`).
 - Winner is selected and **frozen before** any reveal animation/SFX/rarity code runs
   (`CODE-019`). Reveal code can read `frozenSelection.winner`; it can never choose or replace it.
-- `PURE_RANDOM` (equal weight) is the default for `NONE`/`HARD_MAX` budget modes. `TARGET` is the
-  only weighted mode, via the exact formula in `src/features/randomizer/domain/weighting.ts`.
+- All budget modes use the current rarity contract above. NONE/HARD_MAX apply specialty
+  weights within each tier; TARGET additionally applies price fit using
+  `src/features/randomizer/domain/weighting.ts`.
 - `HARD_MAX` is a true ceiling (unknown-price items excluded, never treated as free). `TARGET` is
   a separate "around this price" mode. Never blur the two in code or copy.
 - Re-spin excludes only the immediately-previous winner, and only when another eligible item
-  exists (`RANK-015`).
-- Rarity is presentation-only — it must never change selection odds or claim food quality/value.
+  of the same tier exists (v2 update to `RANK-015`).
+- Rarity controls frequency; it must never claim food quality/value.
 - Respect `prefers-reduced-motion`: short (`<=600ms`) non-sliding reveal, same frozen winner.
 - Sound is enhancement only; audio failure/mute never blocks OPEN/reel/reveal/re-spin.
+
+## Device context exception (user request, 2026-09-14)
+
+The user explicitly requires real device time, weekday/date, Vietnamese lunar date,
+geolocation and current weather. `src/features/context` may use permission-gated browser
+geolocation and read-only BigDataCloud/Open-Meteo requests. No IP fallback, invented
+weather, default city or persisted precise coordinates. Unknown/stale/error states must
+remain explicit. This exception supersedes the older GPS/network prohibition below for
+this bounded feature only. See `docs/device-context-plan.md`.
 
 ## M0/M1 scope boundary
 

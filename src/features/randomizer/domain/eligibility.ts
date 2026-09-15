@@ -50,12 +50,14 @@ function applyBudgetHardMax(pool: CandidateItem[], context: RandomizerContext): 
   return pool.filter((item) => item.priceVnd !== null && item.priceVnd <= cap);
 }
 
-/** RANK-015: exclude the immediately previous winner for exactly the next draw, unless it would empty the pool. */
+/** v2: exclude the previous item only when its tier has an alternative; never force a rarer tier. */
 export function applyRespinExclusion(
   eligible: CandidateItem[],
   previousWinnerId: string | null | undefined,
 ): CandidateItem[] {
   if (!previousWinnerId || eligible.length <= 1) return eligible;
+  const previous = eligible.find((item) => item.id === previousWinnerId);
+  if (!previous || !eligible.some((item) => item.id !== previous.id && item.rarity === previous.rarity)) return eligible;
   const withoutPrevious = eligible.filter((item) => item.id !== previousWinnerId);
   return withoutPrevious.length > 0 ? withoutPrevious : eligible;
 }
