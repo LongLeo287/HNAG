@@ -331,24 +331,22 @@ export function createCrateScene(
     parent.add(mesh);
   }
 
-  const art = id === "crate_food" ? "food" : id === "crate_snack" ? "snack" : id === "crate_drinking" ? "party" : undefined;
-  if (art) {
+  const artMap: Record<string, { file: string; uv: [number, number, number, number] }> = {
+    crate_food: { file: "food.png", uv: [0.18, 0.4, 0.4, 0.4] },
+    crate_snack: { file: "snack.png", uv: [0.17, 0.48, 0.64, 0.35] },
+    crate_drinking: { file: "drinking.png", uv: [0.2, 0.3, 0.6, 0.45] },
+  };
+
+  const artConfig = artMap[id];
+  if (artConfig) {
     const image = new Image();
     image.onload = () => {
       if (disposed || failed) return;
-      if (art === "snack") {
-        panel(image, [0.17, 0.48, 0.64, 0.35], group, 1.68, 1.03, [0, 0, 0.901], [0, 0, 0]);
-      } else {
-        panel(image, art === "food" ? [0.095, 0.07, 0.17, 0.15] : [0.06, 0.075, 0.26, 0.175], group, 1.72, 1.1, [0, 0, 0.901], [0, 0, 0]);
-        panel(image, art === "food" ? [0.77, 0.08, 0.19, 0.13] : [0.77, 0.1, 0.19, 0.14], group, 1.35, 1.07, [1.255, 0, 0], [0, Math.PI / 2, 0]);
-        panel(image, art === "food" ? [0.77, 0.08, 0.19, 0.13] : [0.77, 0.1, 0.19, 0.14], group, 1.35, 1.07, [-1.255, 0, 0], [0, -Math.PI / 2, 0]);
-        panel(image, art === "food" ? [0.39, 0.08, 0.27, 0.14] : [0.4, 0.08, 0.26, 0.17], group, 2.12, 1.07, [0, 0, -0.901], [0, Math.PI, 0]);
-        panel(image, art === "food" ? [0.39, 0.33, 0.26, 0.2] : [0.4, 0.345, 0.23, 0.18], hinge, 2.12, 1.32, [0, 0.185, 0.85], [-Math.PI / 2, 0, 0]);
-      }
+      panel(image, artConfig.uv, group, 1.68, 1.03, [0, 0, 0.901], [0, 0, 0]);
       draw();
     };
     image.onerror = () => { /* Procedural materials remain a complete local fallback. */ };
-    image.src = `/images/crates/reference/${art}.png`;
+    image.src = `/images/crates/${artConfig.file}`;
   }
 
   // Pointer drag to rotate freely
