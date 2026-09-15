@@ -47,7 +47,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     tagline: "Cơm, bún, phở, mì nóng hổi",
     description: "Tuyển tập món chính đậm đà chuẩn vị bữa sáng & trưa Việt Nam",
     icon: "🍱",
-    imageSrc: "/images/crates/food.jpg",
+    imageSrc: "/images/crates/food.png",
     theme: {
       primaryHex: "#F59E0B",
       glowClass: "shadow-[0_0_25px_rgba(245,158,11,0.35)]",
@@ -74,7 +74,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     tagline: "Trà sữa, cà phê, sinh tố tươi mát",
     description: "Giải nhiệt sảng khoái tức thì cùng các loại trà, cà phê và đá xay đỉnh cao",
     icon: "🧋",
-    imageSrc: "/images/crates/drink.jpg",
+    imageSrc: "/images/crates/drink.png",
     theme: {
       primaryHex: "#06B6D4",
       glowClass: "shadow-[0_0_25px_rgba(6,182,212,0.35)]",
@@ -101,7 +101,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     tagline: "Bánh tráng, gỏi cuốn, xiên que",
     description: "Thiên đường ăn vặt đường phố giòn ngon, cuốn hút từng miếng",
     icon: "🍢",
-    imageSrc: "/images/crates/snack.jpg",
+    imageSrc: "/images/crates/snack.png",
     theme: {
       primaryHex: "#D946EF",
       glowClass: "shadow-[0_0_25px_rgba(217,70,239,0.35)]",
@@ -128,7 +128,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     tagline: "Lẩu, nướng BBQ, ốc cay nồng",
     description: "Chiến hữu tụ tập lai rai với lẩu thái chua cay, mực nướng sa tế và ốc nóng hổi",
     icon: "🍻",
-    imageSrc: "/images/crates/drinking.jpg",
+    imageSrc: "/images/crates/drinking.png",
     theme: {
       primaryHex: "#EF4444",
       glowClass: "shadow-[0_0_25px_rgba(239,68,68,0.35)]",
@@ -155,7 +155,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     tagline: "Các món có lựa chọn phiên bản chay",
     description: "Danh sách món có thể chọn phiên bản chay; hãy xác nhận thành phần khi gọi món",
     icon: "🥗",
-    imageSrc: "/images/crates/veg.jpg",
+    imageSrc: "/images/crates/veg.png",
     theme: {
       primaryHex: "#10B981",
       glowClass: "shadow-[0_0_25px_rgba(16,185,129,0.35)]",
