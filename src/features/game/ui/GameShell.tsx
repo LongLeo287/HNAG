@@ -402,6 +402,7 @@ export function GameShell() {
           onReducedMotionOverrideChange={setReducedMotionOverride}
           onOpenPreferences={() => setDrawerOpen(true)}
           onReset={handleReset}
+          deviceContext={deviceContext}
         />
 
         {/* Dedicated Odds Modal (User request: "Tỉ lệ nên tách riêng ra. không nên để chung với cài đặt. Phần tỉ lệ thì có setting riêng") */}

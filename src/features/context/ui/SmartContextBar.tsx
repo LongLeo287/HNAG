@@ -21,12 +21,10 @@ const timestampLabel = (value: number) =>
   });
 
 /**
- * Modern Streamlined Status Bar (UX/UI Redesign):
- * - Top master line: live pulse beacon, calendar, lunar date, timezone, filter count, data sources.
- * - Middle balanced grid:
- *   + Left card: High-precision location (street, ward, district, city) + device accuracy.
- *   + Right card: Live weather snapshot + quick refresh & disconnect actions.
- * - Bottom toolbar: Integrated context suggestion switch ("Lọc gợi ý theo giờ và thời tiết đã xác định").
+ * Ultra-Compact Streamlined Status Bar (User Feedback 2026-09-15):
+ * Thiết kế tinh gọn chuẩn status bar, không chiếm nhiều diện tích màn hình.
+ * - Dòng 1: Đèn beacon thời gian thực, Lịch thứ ngày, Giờ phút & Buổi, Âm lịch, Nút Lọc gợi ý, Số lượng món, Nguồn dữ liệu.
+ * - Dòng 2: Ticker vị trí (Đường, Phường, Quận, TP) & Sai số, Thời tiết trực tiếp, Nút Cập nhật & Tắt vị trí.
  */
 export function SmartContextBar({
   context,
@@ -43,107 +41,108 @@ export function SmartContextBar({
   return (
     <section
       aria-label="Thông tin theo thiết bị"
-      className="relative w-full max-w-4xl overflow-hidden rounded-2xl border border-white/12 bg-gradient-to-b from-[#141b26]/95 via-[#0f141d]/95 to-[#0b0e14]/95 backdrop-blur-xl shadow-[0_12px_36px_rgba(0,0,0,0.45)] p-3 sm:p-4 transition-all"
+      className="w-full max-w-4xl rounded-xl border border-white/10 bg-[#0d121a]/90 backdrop-blur-md px-3.5 py-2 transition-all shadow-sm"
     >
-      {/* Top subtle golden highlight */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold-400/30 to-transparent" />
-
-      {/* Row 1: Master Status Bar (Clock, Date, Lunar, Count, Source modal) */}
-      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-white/8">
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          {/* Live pulsing status beacon */}
-          <span className="relative flex h-2.5 w-2.5" title="Dữ liệu thời gian thực">
+      {/* Line 1: Primary System Status (Clock, Date, Lunar, Filter Count, Suggestion Switch) */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 pb-1.5 border-b border-white/6 text-xs">
+        {/* Left: Time & Calendar facts */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="relative flex h-2 w-2" title="Thời gian thực">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.9)]" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
           </span>
 
-          {/* Date */}
           <span data-testid="device-date" className="font-bold text-gold-400 capitalize text-xs tracking-wide">
             {calendar.dateLabel}
           </span>
 
           <span className="text-white/20 select-none">•</span>
 
-          {/* Time & Period */}
-          <div className="flex items-center gap-1.5">
-            <span data-testid="device-time" className="font-mono font-bold tabular-nums text-white text-xs tracking-wider">
-              {calendar.timeLabel}
-            </span>
-            <span data-testid="device-period" className="text-ink-400 text-[11px] font-medium px-1.5 py-0.5 rounded bg-white/5 border border-white/5">
-              {calendar.period}
-            </span>
-          </div>
+          <span data-testid="device-time" className="font-mono font-bold tabular-nums text-white text-xs">
+            {calendar.timeLabel}
+          </span>
+          <span data-testid="device-period" className="text-ink-400 text-[11px] px-1 py-0.2 rounded bg-white/5">
+            {calendar.period}
+          </span>
 
           <span className="text-white/20 select-none">•</span>
 
-          {/* Lunar Date */}
           <span data-testid="lunar-date" className="text-ink-300 text-xs flex items-center gap-1">
             <span className="text-ink-500">Âm lịch:</span>
-            <strong className="text-amber-300 font-semibold">{calendar.lunarLabel}</strong>
+            <strong className="text-amber-300 font-medium">{calendar.lunarLabel}</strong>
           </span>
 
           {/* Timezone contract check for tests */}
-          <span className="hidden text-[10px] text-ink-600">
-            {calendar.timeZone}
-          </span>
+          <span className="hidden text-[10px] text-ink-600">{calendar.timeZone}</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/25 shadow-sm">
-            {matchedCount} món trong bộ lọc
+        {/* Right: Suggestion switch & Filter count badge */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <label className="inline-flex items-center gap-1.5 text-[11px] font-medium text-ink-300 hover:text-white cursor-pointer select-none transition-colors">
+            <input
+              type="checkbox"
+              checked={useContextSuggestions}
+              disabled={disabled}
+              onChange={(event) => onContextSuggestionsChange?.(event.target.checked)}
+              className="h-3.5 w-3.5 rounded border-white/20 bg-canvas-300 text-gold-500 focus:ring-0 cursor-pointer"
+            />
+            <span>Lọc gợi ý theo giờ và thời tiết đã xác định</span>
+          </label>
+
+          <span className="text-white/15 select-none hidden sm:inline">•</span>
+
+          <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            {matchedCount} món
           </span>
 
           <button
             type="button"
             onClick={() => setInfoOpen(true)}
             aria-label="Xem nguồn dữ liệu và độ chính xác"
-            className="flex items-center gap-1.5 text-[11px] font-medium text-ink-400 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/5 cursor-pointer border border-transparent hover:border-white/10"
+            title="Xem nguồn dữ liệu và độ chính xác"
+            className="flex items-center gap-1 text-[11px] text-ink-500 hover:text-white transition-colors cursor-pointer px-1 py-0.5 rounded hover:bg-white/5"
           >
-            <span aria-hidden="true" className="text-xs">ℹ️</span>
-            <span className="hidden sm:inline">Nguồn dữ liệu</span>
+            <span aria-hidden="true">ℹ️</span>
+            <span className="sr-only sm:not-sr-only text-[10.5px]">Nguồn dữ liệu</span>
           </button>
         </div>
       </div>
 
-      {/* Row 2: Location & Weather Environment Cards */}
-      <div className="pt-3" aria-live="polite">
+      {/* Line 2: Environment facts (Location & Weather) - Super compact horizontal ticker */}
+      <div className="pt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5" aria-live="polite">
         {!enabled ? (
-          /* State 1: Location not enabled - Clean, inviting banner */
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-canvas-200/50 rounded-xl px-3.5 py-2.5 border border-white/5">
-            <div className="flex items-center gap-2.5 text-xs text-ink-400">
-              <span className="text-base leading-none">📍</span>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span data-testid="device-location" className="font-semibold text-ink-300">
-                  Chưa bật vị trí thiết bị
-                </span>
-                <span className="text-white/20">•</span>
-                <span data-testid="device-weather" className="text-ink-500 text-[11px]">
-                  Chưa có dữ liệu — cần vị trí thiết bị
-                </span>
-              </div>
+          /* State 1: Location not enabled */
+          <div className="flex flex-wrap items-center justify-between gap-2 w-full">
+            <div className="flex items-center gap-2 text-xs text-ink-400">
+              <span className="text-teal-400 text-xs">📍</span>
+              <span data-testid="device-location" className="font-medium text-ink-300">
+                Chưa bật vị trí thiết bị
+              </span>
+              <span className="text-white/20 select-none">•</span>
+              <span data-testid="device-weather" className="text-ink-500 text-[11px]">
+                Chưa có dữ liệu — cần vị trí thiết bị
+              </span>
             </div>
 
             <button
               type="button"
               onClick={enableLocation}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-gold-500 hover:bg-gold-400 text-ink-900 px-3.5 py-1.5 font-bold text-xs shadow-[0_0_12px_rgba(245,184,46,0.25)] transition-all cursor-pointer"
+              className="inline-flex items-center gap-1 rounded-lg bg-gold-500 hover:bg-gold-400 text-ink-900 px-2.5 py-1 font-bold text-xs shadow-sm transition-all cursor-pointer"
             >
               <span aria-hidden="true">📍</span>
               <span>Dùng vị trí thiết bị</span>
             </button>
           </div>
         ) : (
-          /* State 2: Location enabled - Balanced 2-card grid */
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-2.5">
-            {/* Left Card: Location details (span 7) */}
-            <div className="md:col-span-7 bg-canvas-200/60 border border-white/10 rounded-xl p-3 flex items-start gap-3 shadow-inner">
-              <div className="w-8 h-8 rounded-lg bg-teal-500/15 border border-teal-500/30 flex items-center justify-center text-teal-300 text-sm shrink-0 shadow-sm mt-0.5">
-                📍
-              </div>
-              <div className="min-w-0 flex-1">
-                <div
+          /* State 2: Location enabled - 1-line sleek status ticker */
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 w-full">
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 min-w-0 flex-1 text-xs">
+              {/* Location Badge */}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-teal-400 text-xs shrink-0">📍</span>
+                <span
                   data-testid="device-location"
-                  className="font-semibold text-white text-xs leading-snug line-clamp-2"
+                  className="font-medium text-white text-xs truncate max-w-xs sm:max-w-md"
                   title={place.status === "ready" ? place.data.label : undefined}
                 >
                   {place.status === "ready"
@@ -153,91 +152,62 @@ export function SmartContextBar({
                     : place.status === "error"
                     ? place.message
                     : "Chưa bật vị trí thiết bị"}
-                </div>
+                </span>
+
                 {place.status === "ready" && (
-                  <div className="text-[10.5px] text-ink-500 font-medium mt-1 flex items-center gap-1.5 flex-wrap">
-                    <span>
-                      Sai số thiết bị khoảng {Math.ceil(place.data.position.accuracy).toLocaleString("vi-VN")} m
-                    </span>
-                    <span className="text-white/20">•</span>
-                    <span>{timestampLabel(place.data.position.timestamp)}</span>
-                  </div>
+                  <span className="text-[10.5px] text-ink-500 shrink-0">
+                    (Sai số thiết bị khoảng {Math.ceil(place.data.position.accuracy).toLocaleString("vi-VN")} m • {timestampLabel(place.data.position.timestamp)})
+                  </span>
+                )}
+              </div>
+
+              <span className="text-white/20 select-none hidden sm:inline">•</span>
+
+              {/* Weather Badge */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span data-testid="device-weather" className="font-semibold text-amber-300 text-xs">
+                  {weather.status === "ready"
+                    ? `${weather.data.icon} ${weather.data.label} · ${weather.data.temperature.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}°C`
+                    : weather.status === "loading"
+                    ? "Đang lấy dữ liệu thời tiết…"
+                    : weather.status === "error"
+                    ? weather.message
+                    : "Chưa có dữ liệu — cần vị trí thiết bị"}
+                </span>
+                {weather.status === "ready" && (
+                  <span className="hidden xl:inline text-[10px] text-ink-500">
+                    ({timestampLabel(weather.data.validAt)})
+                  </span>
                 )}
               </div>
             </div>
 
-            {/* Right Card: Weather status & Controls (span 5) */}
-            <div className="md:col-span-5 bg-canvas-200/60 border border-white/10 rounded-xl p-3 flex flex-col justify-between gap-2.5 shadow-inner">
-              {/* Weather Info */}
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-300 text-sm shrink-0 shadow-sm">
-                  {weather.status === "ready" ? weather.data.icon : "🌤️"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div data-testid="device-weather" className="font-semibold text-ink-100 text-xs truncate">
-                    {weather.status === "ready"
-                      ? `${weather.data.label} · ${weather.data.temperature.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}°C`
-                      : weather.status === "loading"
-                      ? "Đang lấy dữ liệu thời tiết…"
-                      : weather.status === "error"
-                      ? weather.message
-                      : "Chưa có dữ liệu — cần vị trí thiết bị"}
-                  </div>
-                  {weather.status === "ready" && (
-                    <div className="text-[10px] text-ink-500 font-medium truncate">
-                      Cập nhật lúc {timestampLabel(weather.data.validAt)}
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Quick Action Buttons */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={refresh}
+                disabled={loading}
+                aria-label="Cập nhật vị trí và thời tiết"
+                title="Cập nhật vị trí và thời tiết"
+                className="inline-flex items-center gap-1 h-6 px-2 rounded-md border border-white/10 bg-canvas-200/80 hover:bg-canvas-300 text-ink-300 hover:text-white text-[11px] font-medium transition-all cursor-pointer disabled:opacity-50"
+              >
+                <span aria-hidden="true" className={loading ? "animate-spin" : ""}>🔄</span>
+                <span>{loading ? "Đang cập nhật…" : "Cập nhật vị trí và thời tiết"}</span>
+              </button>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 pt-1 border-t border-white/5">
-                <button
-                  type="button"
-                  onClick={refresh}
-                  disabled={loading}
-                  aria-label="Cập nhật vị trí và thời tiết"
-                  title="Cập nhật vị trí và thời tiết"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 h-7 px-2 rounded-lg border border-white/10 bg-canvas-300/80 hover:bg-canvas-400 text-ink-200 hover:text-white text-xs font-semibold transition-all cursor-pointer disabled:opacity-50"
-                >
-                  <span aria-hidden="true" className={`text-xs ${loading ? "animate-spin" : ""}`}>🔄</span>
-                  <span className="truncate">{loading ? "Đang cập nhật…" : "Cập nhật vị trí và thời tiết"}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={disableLocation}
-                  aria-label="Tắt dùng vị trí"
-                  title="Tắt dùng vị trí"
-                  className="inline-flex items-center justify-center gap-1 h-7 px-2.5 rounded-lg border border-white/5 bg-transparent hover:bg-chili-500/10 text-ink-400 hover:text-chili-400 text-xs transition-all cursor-pointer shrink-0"
-                >
-                  <span aria-hidden="true">✕</span>
-                  <span>Tắt dùng vị trí</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={disableLocation}
+                aria-label="Tắt dùng vị trí"
+                title="Tắt dùng vị trí"
+                className="inline-flex items-center h-6 px-2 rounded-md border border-white/5 bg-transparent hover:bg-chili-500/10 text-ink-500 hover:text-chili-400 text-[11px] transition-all cursor-pointer"
+              >
+                <span>Tắt dùng vị trí</span>
+              </button>
             </div>
           </div>
         )}
-      </div>
-
-      {/* Row 3: Integrated Context Suggestions Toggle Strip */}
-      <div className="border-t border-white/8 mt-3 pt-2.5 flex items-center justify-between gap-3">
-        <label className="inline-flex items-center gap-2 text-xs font-medium text-ink-300 hover:text-white cursor-pointer select-none transition-colors">
-          <input
-            type="checkbox"
-            checked={useContextSuggestions}
-            disabled={disabled}
-            onChange={(event) => onContextSuggestionsChange?.(event.target.checked)}
-            className="h-4 w-4 rounded border-white/20 bg-canvas-300 text-gold-500 focus:ring-gold-500/30 focus:ring-offset-0 cursor-pointer transition-all"
-          />
-          <span>Lọc gợi ý theo giờ và thời tiết đã xác định</span>
-        </label>
-
-        <span className="text-[11px] text-ink-500 font-mono hidden sm:inline-flex items-center gap-1.5">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-teal-400/70 animate-pulse" />
-          HNAG Context Engine
-        </span>
       </div>
 
       {/* Popover / Modal: Nguồn dữ liệu và độ chính xác */}

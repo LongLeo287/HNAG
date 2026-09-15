@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { SfxToggle } from "@/features/audio/SfxToggle";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { MotionModePicker } from "./MotionModePicker";
+import type { useSmartContext } from "@/features/context/useSmartContext";
 
 interface SettingsDrawerProps {
   open: boolean;
@@ -17,6 +18,7 @@ interface SettingsDrawerProps {
   onReducedMotionOverrideChange: (value: boolean | null) => void;
   onOpenPreferences: () => void;
   onReset: () => void;
+  deviceContext?: ReturnType<typeof useSmartContext>;
 }
 
 /**
@@ -36,6 +38,7 @@ export function SettingsDrawer({
   onReducedMotionOverrideChange,
   onOpenPreferences,
   onReset,
+  deviceContext,
 }: SettingsDrawerProps) {
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -138,6 +141,95 @@ export function SettingsDrawer({
                 onChange={onReducedMotionOverrideChange}
               />
             </div>
+
+            {/* Section: Location & Weather Preferences */}
+            {deviceContext && (
+              <div className="flex flex-col gap-3 border-t border-white/10 pt-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold tracking-wide text-ink-500 uppercase">
+                    Vị trí & Thời tiết thiết bị
+                  </span>
+                  <span
+                    className={`text-[10.5px] font-semibold px-2 py-0.5 rounded-full ${
+                      deviceContext.enabled
+                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        : "bg-white/5 text-ink-500 border border-white/5"
+                    }`}
+                  >
+                    {deviceContext.enabled ? "Đang bật" : "Chưa bật"}
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-canvas-200/60 p-3.5 flex flex-col gap-2.5 text-xs">
+                  {deviceContext.enabled ? (
+                    <>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-teal-400 text-sm mt-0.5 shrink-0">📍</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-white break-words text-xs leading-snug">
+                            {deviceContext.place.status === "ready"
+                              ? deviceContext.place.data.label
+                              : deviceContext.place.status === "loading"
+                              ? "Đang xác định vị trí…"
+                              : deviceContext.place.message}
+                          </p>
+                          {deviceContext.place.status === "ready" && (
+                            <p className="text-[11px] text-ink-500 mt-0.5">
+                              Sai số khoảng {Math.ceil(deviceContext.place.data.position.accuracy)} m
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                        <span className="text-amber-400 text-sm shrink-0">🌤️</span>
+                        <p className="font-medium text-ink-200 text-xs">
+                          {deviceContext.weather.status === "ready"
+                            ? `${deviceContext.weather.data.icon} ${deviceContext.weather.data.label} · ${deviceContext.weather.data.temperature.toLocaleString("vi-VN", { maximumFractionDigits: 1 })}°C`
+                            : deviceContext.weather.status === "loading"
+                            ? "Đang lấy dữ liệu thời tiết…"
+                            : deviceContext.weather.message}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <button
+                          type="button"
+                          onClick={deviceContext.refresh}
+                          disabled={
+                            deviceContext.place.status === "loading" ||
+                            deviceContext.weather.status === "loading"
+                          }
+                          className="flex-1 rounded-xl border border-white/10 bg-canvas-300/80 px-3 py-2 font-semibold text-ink-200 hover:bg-canvas-400 hover:text-white transition-colors cursor-pointer text-xs disabled:opacity-50"
+                        >
+                          Cập nhật dữ liệu
+                        </button>
+                        <button
+                          type="button"
+                          onClick={deviceContext.disableLocation}
+                          className="rounded-xl border border-white/5 bg-transparent px-3 py-2 text-ink-500 hover:text-chili-400 hover:bg-chili-500/10 transition-colors cursor-pointer text-xs"
+                        >
+                          Tắt dùng vị trí
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col gap-2.5">
+                      <p className="text-ink-400 text-[11.5px] leading-relaxed">
+                        Cho phép ứng dụng sử dụng vị trí GPS để xác định chính xác quán ăn quanh bạn trên Google Maps / GrabFood / ShopeeFood và tự động gợi ý món theo thời tiết hiện tại.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={deviceContext.enableLocation}
+                        className="w-full rounded-xl bg-gold-500 hover:bg-gold-400 text-ink-900 font-bold px-3.5 py-2.5 text-xs transition-colors cursor-pointer shadow-sm"
+                      >
+                        Bật dùng vị trí thiết bị
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Section 3: Audio & System */}
             <div className="flex flex-col gap-4 border-t border-white/10 pt-5">
