@@ -14,6 +14,7 @@ import { GameControls } from "./GameControls";
 import { OpenCaseButton } from "./OpenCaseButton";
 import { CatalogExplorer } from "./CatalogExplorer";
 import { SettingsDrawer } from "./SettingsDrawer";
+import { OddsDialog } from "./OddsDialog";
 import { RevealThemePicker } from "./RevealThemePicker";
 import { bundledItemsForKind } from "@/data/catalog";
 import { combinePool } from "@/features/pool";
@@ -64,6 +65,7 @@ export function GameShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [preferencesTab, setPreferencesTab] = useState<"add" | "builtin">("add");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [oddsOpen, setOddsOpen] = useState(false);
   const [poolPreviewOpen, setPoolPreviewOpen] = useState(false);
 
   const deviceContext = useSmartContext();
@@ -191,7 +193,7 @@ export function GameShell() {
           setDrawerOpen(true);
         }}
         onOpenSettings={() => setSettingsOpen((prev) => !prev)}
-        onOpenOdds={() => setSettingsOpen(true)}
+        onOpenOdds={() => setOddsOpen(true)}
         spinCount={spinCount}
         preferencesDisabled={game.phase === "spinning"}
       />
@@ -271,10 +273,10 @@ export function GameShell() {
             accentHex={currentCrate.theme.primaryHex}
           />
 
-          {/* Subtle quick access pill to view odds in menu */}
+          {/* Subtle quick access pill to view odds in dedicated modal */}
           <button
             type="button"
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => setOddsOpen(true)}
             aria-label="Xem tỉ lệ mở theo bộ lọc hiện tại"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-canvas-200/80 px-4 py-1.5 text-xs font-medium text-ink-500 hover:border-gold-500/40 hover:bg-canvas-300 hover:text-white transition-all shadow-sm group cursor-pointer"
           >
@@ -363,7 +365,7 @@ export function GameShell() {
           </p>
         </footer>
 
-        {/* Settings Slide-over Drawer (right edge) */}
+        {/* Settings Slide-over Drawer (right edge - strictly for settings) */}
         <SettingsDrawer
           open={settingsOpen}
           onOpenChange={setSettingsOpen}
@@ -376,6 +378,12 @@ export function GameShell() {
           onReducedMotionOverrideChange={setReducedMotionOverride}
           onOpenPreferences={() => setDrawerOpen(true)}
           onReset={handleReset}
+        />
+
+        {/* Dedicated Odds Modal (User request: menu cài đặt và tỉ lệ không nên để chung với nhau) */}
+        <OddsDialog
+          open={oddsOpen}
+          onOpenChange={setOddsOpen}
           odds={game.phase === "spinning" && game.frozenSelection ? game.frozenSelection : nextDrawOdds}
         />
 

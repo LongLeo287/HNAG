@@ -19,7 +19,7 @@ export type PersistedFilters = z.infer<typeof FiltersSchema>;
 
 export const PreferencesSchema = z.object({
   version: z.literal(SCHEMA_VERSION),
-  soundEnabled: z.boolean(),
+  soundEnabled: z.boolean().default(true),
   filters: FiltersSchema,
   disabledBuiltInIds: z.array(z.string()),
   customItems: z.array(CandidateItemSchema),
@@ -44,8 +44,8 @@ export type Preferences = z.infer<typeof PreferencesSchema>;
 
 export const DEFAULT_PREFERENCES: Preferences = {
   version: SCHEMA_VERSION,
-  // DS-024: default sound OFF until the user opts in via an explicit OPEN interaction.
-  soundEnabled: false,
+  // User request 2026-09-15: "các hiệu ứng trên HNAG đều mặc định mở" -> Sound effects default ON
+  soundEnabled: true,
   filters: {
     kind: "FOOD",
     categoryIds: [],

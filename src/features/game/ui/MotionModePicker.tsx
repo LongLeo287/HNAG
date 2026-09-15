@@ -5,17 +5,22 @@ interface MotionModePickerProps {
   onChange: (value: boolean | null) => void;
 }
 
-const OPTIONS: { value: boolean | null; label: string }[] = [
-  { value: null, label: "Theo máy" },
-  { value: false, label: "Bật hiệu ứng" },
-  { value: true, label: "Giảm chuyển động" },
-];
+const OPTIONS = [
+  {
+    value: false,
+    label: "Bật hiệu ứng",
+    isPressed: (val: boolean | null) => val === false || val === null,
+  },
+  {
+    value: true,
+    label: "Giảm chuyển động",
+    isPressed: (val: boolean | null) => val === true,
+  },
+] as const;
 
 /**
- * Menu function: manual reduced-motion override (user request 2026-09-11). `null` means "follow
- * the OS/browser prefers-reduced-motion setting" — the pre-existing default behavior, unaffected
- * unless the user explicitly picks one of the other two options (RANK-030/CODE-037 still apply
- * either way — this only decides *which* signal chooses the reduced-motion path).
+ * Menu function: manual reduced-motion override (user request: "các hiệu ứng trên HNAG đều mặc định mở").
+ * Bật hiệu ứng được kích hoạt mặc định. Người dùng có thể chuyển sang "Giảm chuyển động" bất kỳ lúc nào.
  */
 export function MotionModePicker({ value, onChange }: MotionModePickerProps) {
   return (
@@ -25,7 +30,7 @@ export function MotionModePicker({ value, onChange }: MotionModePickerProps) {
         {OPTIONS.map((option) => (
           <Chip
             key={String(option.value)}
-            pressed={value === option.value}
+            pressed={option.isPressed(value)}
             onClick={() => onChange(option.value)}
           >
             {option.label}

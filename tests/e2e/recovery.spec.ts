@@ -74,7 +74,7 @@ test("audio and storage failures leave the full game playable with an honest sav
     Storage.prototype.setItem = () => { throw new DOMException("Storage unavailable", "QuotaExceededError"); };
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Bật âm thanh", exact: true }).click();
+  await page.getByRole("button", { name: /âm thanh/i }).first().click();
   await expect(page.getByText(/trình duyệt chưa lưu được thay đổi/i)).toBeVisible();
   await page.getByRole("button", { name: /mở hộp/i }).click();
   await expect(page.getByRole("button", { name: /chốt món/i })).toBeVisible({ timeout: 10000 });

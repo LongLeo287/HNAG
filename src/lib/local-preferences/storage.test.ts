@@ -12,7 +12,7 @@ describe("local preferences storage", () => {
   });
 
   it("round-trips a saved value", () => {
-    const preferences = { ...DEFAULT_PREFERENCES, soundEnabled: true };
+    const preferences = { ...DEFAULT_PREFERENCES, soundEnabled: false };
     expect(savePreferences(preferences)).toBe(true);
     expect(loadPreferences()).toEqual(preferences);
   });
@@ -28,7 +28,7 @@ describe("local preferences storage", () => {
   });
 
   it("reset clears storage and returns defaults", () => {
-    savePreferences({ ...DEFAULT_PREFERENCES, soundEnabled: true });
+    savePreferences({ ...DEFAULT_PREFERENCES, soundEnabled: false });
     expect(resetPreferences()).toEqual(DEFAULT_PREFERENCES);
     expect(loadPreferences()).toEqual(DEFAULT_PREFERENCES);
   });

@@ -2,8 +2,6 @@ import { useEffect, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { SfxToggle } from "@/features/audio/SfxToggle";
-import { RarityOdds } from "@/components/ui/RarityOdds";
-import type { DrawOdds } from "@/features/randomizer/domain";
 import { BackgroundPicker } from "./BackgroundPicker";
 import { MotionModePicker } from "./MotionModePicker";
 
@@ -19,7 +17,6 @@ interface SettingsDrawerProps {
   onReducedMotionOverrideChange: (value: boolean | null) => void;
   onOpenPreferences: () => void;
   onReset: () => void;
-  odds?: DrawOdds;
 }
 
 /**
@@ -39,7 +36,6 @@ export function SettingsDrawer({
   onReducedMotionOverrideChange,
   onOpenPreferences,
   onReset,
-  odds,
 }: SettingsDrawerProps) {
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -127,21 +123,8 @@ export function SettingsDrawer({
             disabled={disabled}
             className="flex flex-col gap-6 disabled:opacity-50"
           >
-            {/* Section: Rarity Odds (Moved into Menu per UX/UI request) */}
-            {odds && (
-              <div className="flex flex-col gap-2.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">📊</span>
-                  <span className="text-xs font-semibold tracking-wide text-ink-500 uppercase">
-                    Tỉ lệ mở hòm (Rarity Odds)
-                  </span>
-                </div>
-                <RarityOdds odds={odds} />
-              </div>
-            )}
-
             {/* Section 1: Background Landmark */}
-            <div className="flex flex-col gap-2.5 border-t border-white/10 pt-5">
+            <div className="flex flex-col gap-2.5">
               <BackgroundPicker
                 value={backgroundId}
                 onChange={onBackgroundChange}
