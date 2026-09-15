@@ -7,6 +7,7 @@ import { RevealThemeRenderer } from "./RevealThemeRenderer";
 import { WinnerModal } from "./WinnerModal";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSpinProfile } from "../themes/case-reel/spinProfile";
+import { ThreeCrate } from "../three/ThreeCrate";
 
 interface CrateStageProps {
   phase: "configuring" | "blocked" | "spinning" | "revealed";
@@ -22,12 +23,14 @@ interface CrateStageProps {
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
+  onSelectCrate?: (crateId: string) => void;
 }
 
 /**
  * CS:GO Crate Showcase:
  * The dominant permanent stage featuring the crate container, status beacon,
  * idle items preview, high-speed spin reel, and grand victory reveal modal.
+ * When theme = blindbox, displays interactive 3D Three.js crate.
  */
 export function CrateStage({
   phase,
@@ -66,12 +69,11 @@ export function CrateStage({
     }
   }, [phase, audio, frozenSelection]);
 
-  // Stable identity so CaseReel's start effect doesn't see a "new" callback (and therefore a new
-  // `start`) on every unrelated CrateStage re-render while a spin is in flight.
   const handleTick = useCallback(() => audio.playTick(), [audio]);
 
   return (
-    <div
+    <section
+      aria-label="Khu vực hòm và vòng quay"
       className="relative w-full overflow-hidden rounded-2xl border bg-[#0a0e16] shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-md transition-colors duration-300"
       style={{ borderColor: `${activeCrate.theme.primaryHex}45` }}
     >
@@ -84,11 +86,14 @@ export function CrateStage({
 
       {/* Stage Body - directly host the reel */}
       <div className="relative">
-        {phase === "configuring" && <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} />}
+        {phase === "configuring" && (revealThemeId === "blindbox" && !reducedMotion
+          ? <ThreeCrate key={activeCrate.id} crate={activeCrate} />
+          : <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} />)}
 
         {phase === "spinning" && !reducedMotion && frozenSelection && (
           <RevealThemeRenderer
             themeId={revealThemeId}
+            crate={activeCrate}
             frozenSelection={frozenSelection}
             decoyPool={frozenSelection.eligiblePool}
             caseReelDurationMs={spinProfile.durationMs}
@@ -128,6 +133,6 @@ export function CrateStage({
           </>
         )}
       </div>
-    </div>
+    </section>
   );
 }

@@ -17,6 +17,8 @@ describe("GameAudio (QA-024: audio-unavailable resilience)", () => {
     expect(() => audio.recover()).not.toThrow();
     expect(() => audio.setEnabled(true)).not.toThrow();
     expect(() => audio.playCrateOpen()).not.toThrow();
+    expect(() => audio.playCrateHover()).not.toThrow();
+    expect(() => audio.playCrateLid()).not.toThrow();
     expect(() => audio.playEquipCrate()).not.toThrow();
     expect(() => audio.playTick()).not.toThrow();
     expect(() => audio.playReveal()).not.toThrow();
@@ -31,6 +33,8 @@ describe("GameAudio (QA-024: audio-unavailable resilience)", () => {
 
     expect(() => audio.preload()).not.toThrow();
     expect(() => audio.playCrateOpen()).not.toThrow();
+    expect(() => audio.playCrateHover()).not.toThrow();
+    expect(() => audio.playCrateLid()).not.toThrow();
     expect(() => audio.playEquipCrate()).not.toThrow();
     expect(() => audio.playTick()).not.toThrow();
     expect(() => audio.playReveal()).not.toThrow();
@@ -49,11 +53,83 @@ describe("GameAudio (QA-024: audio-unavailable resilience)", () => {
 
     const audio = createGameAudio();
     audio.setEnabled(false);
+    audio.playCrateHover();
+    audio.playCrateLid();
     audio.playTick();
     audio.playReveal();
     audio.playReveal("HUYEN_THOAI", "CENTRAL");
 
     expect(createOscillator).not.toHaveBeenCalled();
+  });
+
+  function mockSynth(state: AudioContextState = "running") {
+    const parameter = () => ({
+      setValueAtTime: vi.fn(),
+      linearRampToValueAtTime: vi.fn(),
+      exponentialRampToValueAtTime: vi.fn(),
+    });
+    const gain = { gain: parameter(), connect: vi.fn() };
+    const oscillator = {
+      frequency: parameter(), connect: vi.fn(() => gain), start: vi.fn(), stop: vi.fn(),
+    };
+    const ctx = {
+      state, currentTime: 0, destination: {}, resume: vi.fn().mockResolvedValue(undefined),
+      createGain: vi.fn(() => gain), createOscillator: vi.fn(() => oscillator),
+    };
+    const constructor = vi.fn(function () { return ctx; });
+    window.AudioContext = constructor as unknown as typeof AudioContext;
+    return { ctx, constructor, oscillator, gain };
+  }
+
+  it("hover never creates or resumes an audio context", () => {
+    const { ctx, constructor } = mockSynth("suspended");
+    const audio = createGameAudio();
+    audio.setEnabled(true);
+    audio.playCrateHover();
+    expect(constructor).not.toHaveBeenCalled();
+    audio.preload();
+    audio.playCrateHover();
+    expect(constructor).toHaveBeenCalledTimes(1);
+    expect(ctx.resume).not.toHaveBeenCalled();
+    expect(ctx.createOscillator).not.toHaveBeenCalled();
+  });
+
+  it("plays a quiet 80ms hover chime and throttles rapid re-entry", () => {
+    const { ctx, oscillator, gain } = mockSynth();
+    const audio = createGameAudio();
+    audio.preload();
+    audio.setEnabled(true);
+    audio.playCrateHover();
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+    expect(gain.gain.linearRampToValueAtTime).toHaveBeenCalledWith(0.035, 0.005);
+    expect(gain.gain.exponentialRampToValueAtTime).toHaveBeenCalledWith(0.0001, 0.08);
+    expect(oscillator.start).toHaveBeenCalledWith(0);
+    ctx.currentTime = 0.179;
+    audio.playCrateHover();
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(1);
+    ctx.currentTime = 0.18;
+    audio.playCrateHover();
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(2);
+    audio.setEnabled(false);
+    ctx.currentTime = 1;
+    audio.playCrateHover();
+    audio.playCrateLid();
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(2);
+  });
+
+  it("plays the short rising lid cue only while the context is running", () => {
+    const { ctx, oscillator } = mockSynth("suspended");
+    const audio = createGameAudio();
+    audio.setEnabled(true);
+    audio.playCrateLid();
+    expect(ctx.createOscillator).not.toHaveBeenCalled();
+    expect(ctx.resume).not.toHaveBeenCalled();
+    ctx.state = "running";
+    audio.playCrateLid();
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(2);
+    expect(oscillator.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(420, 0.24);
+    expect(oscillator.frequency.exponentialRampToValueAtTime).toHaveBeenCalledWith(1500, 0.225);
+    expect(oscillator.stop).toHaveBeenCalledTimes(2);
   });
 
   it("adds an original regional chime only for a specialty, with different region notes", () => {

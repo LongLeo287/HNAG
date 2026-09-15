@@ -5,6 +5,7 @@ import { BlindboxReveal } from "@/features/reveal/themes/blindbox/BlindboxReveal
 import { WheelReveal } from "@/features/reveal/themes/wheel/WheelReveal";
 import { SlotMachineReveal } from "@/features/reveal/themes/slot-machine/SlotMachineReveal";
 import { CardFlipReveal } from "@/features/reveal/themes/card-flip/CardFlipReveal";
+import type { CrateDefinition } from "@/data/crates";
 
 interface RevealThemeRendererProps {
   themeId: string;
@@ -13,6 +14,7 @@ interface RevealThemeRendererProps {
   caseReelDurationMs: number;
   onTick: () => void;
   onLanded: () => void;
+  crate?: CrateDefinition;
 }
 
 /**
@@ -27,10 +29,11 @@ export function RevealThemeRenderer({
   caseReelDurationMs,
   onTick,
   onLanded,
+  crate,
 }: RevealThemeRendererProps) {
   switch (themeId) {
     case "blindbox":
-      return <BlindboxReveal frozenSelection={frozenSelection} onTick={onTick} onLanded={onLanded} />;
+      return <BlindboxReveal frozenSelection={frozenSelection} onTick={onTick} onLanded={onLanded} crate={crate} />;
     case "wheel":
       return (
         <WheelReveal

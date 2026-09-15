@@ -3,11 +3,14 @@ import type { FrozenSelection } from "@/features/randomizer/domain";
 import { CategoryArt } from "@/components/ui/CategoryArt";
 import { RARITY_STYLE } from "@/lib/rarity";
 import { cx } from "@/lib/cx";
+import { CRATES, type CrateDefinition } from "@/data/crates";
+import { ThreeCrate } from "../../three/ThreeCrate";
 
 interface BlindboxRevealProps {
   frozenSelection: FrozenSelection;
   onTick: () => void;
   onLanded: () => void;
+  crate?: CrateDefinition;
 }
 
 type Phase = "idle" | "shaking" | "opening" | "revealed";
@@ -23,7 +26,7 @@ const START_DELAY_MS = 200;
  * assets/animation curve). A single sealed box shakes, its lid flies off, and the already-frozen
  * winner pops out — RANK-021/CODE-019 still apply: this component only presents `frozenSelection`.
  */
-export function BlindboxReveal({ frozenSelection, onTick, onLanded }: BlindboxRevealProps) {
+export function BlindboxReveal({ frozenSelection, onTick, onLanded, crate = CRATES[0]! }: BlindboxRevealProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const landedRef = useRef(false);
   const rarity = RARITY_STYLE[frozenSelection.winner.rarity];
@@ -49,31 +52,17 @@ export function BlindboxReveal({ frozenSelection, onTick, onLanded }: BlindboxRe
 
   return (
     <div
-      className="relative flex h-52 w-full items-center justify-center"
+      className="relative flex min-h-72 w-full items-center justify-center"
       role="status"
       aria-live="polite"
       aria-label="Đang mở hộp bí ẩn"
     >
-      {phase !== "revealed" && (
-        <div className={cx("relative", phase === "shaking" && "animate-blindbox-shake")}>
-          {/* Lid */}
-          <div
-            className={cx(
-              "h-8 w-32 rounded-t-lg border-2 border-b-0 border-canvas-100 bg-steel-500",
-              phase === "opening" && "animate-blindbox-lid",
-            )}
-          />
-          {/* Body */}
-          <div className="flex h-24 w-32 flex-col items-center justify-center rounded-b-lg border-2 border-canvas-100 bg-steel-400">
-            <span className="text-2xl text-canvas-100">?</span>
-          </div>
-        </div>
-      )}
+      <ThreeCrate crate={crate} pose={phase} />
 
       {phase === "revealed" && (
         <div
           className={cx(
-            "animate-blindbox-pop flex flex-col items-center gap-2 rounded-hnag border-2 bg-canvas-200 p-4",
+            "absolute top-2 animate-blindbox-pop flex flex-col items-center gap-2 rounded-hnag border-2 bg-canvas-200 p-4",
             rarity.frameClass,
             rarity.glowClass,
           )}

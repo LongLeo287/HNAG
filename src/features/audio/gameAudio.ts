@@ -19,8 +19,10 @@ type SpecialtyRegion = NonNullable<CandidateItem["regionalSpecialty"]>["region"]
 
 export interface GameAudio {
   preload(): void;
-  /** Call from the OPEN click handler — the only place allowed to unlock audio (DS-024). */
+  /** Unlock only from pointer-down, click, or keyboard activation; never from hover (DS-024). */
   recover(): void;
+  playCrateHover(): void;
+  playCrateLid(): void;
   playCrateOpen(): void;
   playEquipCrate(): void;
   playTick(): void;
@@ -35,6 +37,7 @@ const TICK_DURATION_S = 0.028;
 const REVEAL_NOTE_DURATION_S = 0.13;
 const GAIN_WHEN_ON = 0.2;
 const SWEEP_GAIN = 0.1;
+const CRATE_HOVER_INTERVAL_S = 0.18;
 // Original UI chimes, not recordings or claims of traditional regional music.
 const SPECIALTY_CHIME: Record<SpecialtyRegion, readonly number[]> = {
   NORTH: [587, 784, 880, 1175], CENTRAL: [622, 830, 933, 1244], SOUTH: [659, 880, 988, 1319],
@@ -45,7 +48,7 @@ const REVEAL_CHORD_HZ: Record<RarityTier, number[]> = {
   THUONG: [660, 880],
   NGON: [660, 880, 1100],
   DINH: [660, 880, 1100, 1320],
-  HUYEN_THOAI: [660, 880, 1100, 1320, 1650],
+  HUYEN_THOAI: [660, 880, 1100, 1320, 1760],
 };
 
 const REVEAL_SWEEP_S: Record<RarityTier, number> = {
@@ -65,6 +68,7 @@ function resolveAudioContextCtor(): AudioContextCtor | undefined {
 export function createGameAudio(): GameAudio {
   let context: AudioContext | undefined;
   let enabled = false;
+  let lastCrateHoverAt = Number.NEGATIVE_INFINITY;
 
   function ensureContext(): AudioContext | undefined {
     if (context) return context;
@@ -121,6 +125,23 @@ export function createGameAudio(): GameAudio {
       if (ctx.state === "suspended") {
         void ctx.resume().catch(() => undefined);
       }
+    },
+    playCrateHover() {
+      // Hover is not an activation gesture: use only an already unlocked context.
+      if (!enabled || !context || context.state !== "running") return;
+      const now = context.currentTime;
+      if (now - lastCrateHoverAt < CRATE_HOVER_INTERVAL_S) return;
+      lastCrateHoverAt = now;
+      playTone(880, now, 0.08, context, { endFrequencyHz: 1100, gain: 0.035 });
+    },
+    playCrateLid() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      const now = ctx.currentTime;
+      // Original hinge lift and soft airy overtone, separate from the latch snap.
+      playTone(150, now, 0.24, ctx, { type: "triangle", endFrequencyHz: 420, gain: 0.12 });
+      playTone(600, now + 0.025, 0.2, ctx, { type: "sine", endFrequencyHz: 1500, gain: 0.045 });
     },
     playCrateOpen() {
       if (!enabled) return;
