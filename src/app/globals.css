@@ -239,6 +239,23 @@
   animation: laser-glow 2s ease-in-out infinite;
 }
 
+/*
+ * SelectorLine ticker needle. One kick per card crossing: snap to --kick,
+ * then spring back. Replayed by remounting the needle (key={tickTrigger})
+ * rather than toggling React state from inside an effect — the previous
+ * setState-in-useEffect version tripped react-hooks/set-state-in-effect
+ * and, on a fast reel, could queue a render per tick.
+ */
+@keyframes needle-kick {
+  0%   { transform: translateX(-50%) rotate(0deg); }
+  45%  { transform: translateX(-50%) rotate(var(--kick, 18deg)); }
+  100% { transform: translateX(-50%) rotate(0deg); }
+}
+
+.animate-needle-kick {
+  animation: needle-kick 160ms cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
 .animate-pulse-status {
   animation: pulse-status 1.8s ease-in-out infinite;
 }

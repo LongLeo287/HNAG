@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 interface SelectorLineProps {
   tickTrigger?: number;
   isLanded?: boolean;
@@ -9,16 +7,14 @@ interface SelectorLineProps {
  * DS-023: CS:GO signature tactical selector line.
  * Upgraded with mechanical ticker arrow spring bounce on each card crossing
  * and radiant golden laser target-lock flare on winner landing.
+ *
+ * The needle kick is a CSS keyframe replayed by remounting the needle on each
+ * tick (`key={tickTrigger}`), so there is no state to flip and no effect to
+ * schedule. `tickTrigger === 0` is the idle reel: the needles mount once with
+ * no animation class and never kick.
  */
 export function SelectorLine({ tickTrigger = 0, isLanded = false }: SelectorLineProps) {
-  const [bouncing, setBouncing] = useState(false);
-
-  useEffect(() => {
-    if (tickTrigger === 0) return;
-    setBouncing(true);
-    const timer = window.setTimeout(() => setBouncing(false), 85);
-    return () => window.clearTimeout(timer);
-  }, [tickTrigger]);
+  const kick = tickTrigger > 0 ? "animate-needle-kick" : "";
 
   return (
     <div
@@ -32,11 +28,9 @@ export function SelectorLine({ tickTrigger = 0, isLanded = false }: SelectorLine
     >
       {/* Top mechanical golden ticker needle - kicks on each card boundary */}
       <div
-        className="absolute -top-1 left-1/2 -translate-x-1/2 origin-top will-change-transform"
-        style={{
-          transform: `translateX(-50%) rotate(${bouncing ? "18deg" : "0deg"})`,
-          transition: "transform 75ms cubic-bezier(0.18, 0.89, 0.32, 1.28)",
-        }}
+        key={`top-${tickTrigger}`}
+        className={`absolute -top-1 left-1/2 -translate-x-1/2 origin-top will-change-transform ${kick}`}
+        style={{ "--kick": "18deg" } as React.CSSProperties}
       >
         <div className="h-0 w-0 border-x-[8px] border-t-[12px] border-x-transparent border-t-gold-400 drop-shadow-[0_2px_8px_rgba(245,184,46,0.95)]" />
       </div>
@@ -48,15 +42,12 @@ export function SelectorLine({ tickTrigger = 0, isLanded = false }: SelectorLine
 
       {/* Bottom mechanical golden ticker needle */}
       <div
-        className="absolute -bottom-1 left-1/2 -translate-x-1/2 origin-bottom will-change-transform"
-        style={{
-          transform: `translateX(-50%) rotate(${bouncing ? "-18deg" : "0deg"})`,
-          transition: "transform 75ms cubic-bezier(0.18, 0.89, 0.32, 1.28)",
-        }}
+        key={`bottom-${tickTrigger}`}
+        className={`absolute -bottom-1 left-1/2 -translate-x-1/2 origin-bottom will-change-transform ${kick}`}
+        style={{ "--kick": "-18deg" } as React.CSSProperties}
       >
         <div className="h-0 w-0 border-x-[8px] border-b-[12px] border-x-transparent border-b-gold-400 drop-shadow-[0_-2px_8px_rgba(245,184,46,0.95)]" />
       </div>
     </div>
   );
 }
-
