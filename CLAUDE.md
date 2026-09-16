@@ -1,5 +1,11 @@
 # CLAUDE.md — #HNAG agent instructions
 
+## Workspace and delivery (user instruction, 2026-09-16)
+
+Use this repository as the only active HNAG folder. Do not create sibling copies or
+additional worktrees. Analyze current code first, preserve source assets, and commit
+and push each coherent, tested milestone. See `docs/workspace-policy.md`.
+
 Source of truth: the `#HNAG` planning spreadsheet (34 tabs, `00_INDEX` → `34_DECISION_RANKING_V1`).
 This file is a short, executable summary — read the sheet itself for full detail. When code and
 this file disagree, this file (derived from `27_BUILD_READINESS`) wins for M0/M1.
