@@ -25,6 +25,9 @@ export interface GameAudio {
   playCrateLid(): void;
   playCrateOpen(): void;
   playEquipCrate(): void;
+  playUiHover(): void;
+  playUiClick(): void;
+  playShortcutCue(): void;
   playTick(): void;
   playReveal(rarity?: RarityTier, specialtyRegion?: SpecialtyRegion): void;
   setEnabled(enabled: boolean): void;
@@ -163,6 +166,33 @@ export function createGameAudio(): GameAudio {
       // Sharp mechanical latch engage + solid metallic rack clank
       playTone(1800, now, 0.035, ctx, { type: "square", endFrequencyHz: 600, gain: 0.22 });
       playTone(220, now + 0.015, 0.08, ctx, { type: "triangle", endFrequencyHz: 110, gain: 0.25 });
+    },
+    playUiHover() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      // Subtle micro-tick on mouse hover
+      playTone(1600, ctx.currentTime, 0.012, ctx, { type: "sine", gain: 0.04 });
+    },
+    playUiClick() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      // Crisp mechanical switch click
+      playTone(1200, ctx.currentTime, 0.018, ctx, {
+        type: "square",
+        endFrequencyHz: 450,
+        gain: 0.12,
+      });
+    },
+    playShortcutCue() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      // Pleasant cyber tone for hotkey trigger
+      const now = ctx.currentTime;
+      playTone(720, now, 0.025, ctx, { type: "triangle", gain: 0.09 });
+      playTone(1080, now + 0.02, 0.035, ctx, { type: "sine", gain: 0.08 });
     },
     playTick() {
       if (!enabled) return;

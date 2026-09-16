@@ -13,6 +13,7 @@ interface RevealThemeRendererProps {
   decoyPool: CandidateItem[];
   caseReelDurationMs: number;
   onTick: () => void;
+  onLid?: () => void;
   onLanded: () => void;
   crate?: CrateDefinition;
 }
@@ -28,12 +29,13 @@ export function RevealThemeRenderer({
   decoyPool,
   caseReelDurationMs,
   onTick,
+  onLid,
   onLanded,
   crate,
 }: RevealThemeRendererProps) {
   switch (themeId) {
     case "blindbox":
-      return <BlindboxReveal frozenSelection={frozenSelection} onTick={onTick} onLanded={onLanded} crate={crate} />;
+      return <BlindboxReveal frozenSelection={frozenSelection} onTick={onTick} onLid={onLid} onLanded={onLanded} crate={crate} />;
     case "wheel":
       return (
         <WheelReveal

@@ -9,6 +9,7 @@ import { ThreeCrate } from "../../three/ThreeCrate";
 interface BlindboxRevealProps {
   frozenSelection: FrozenSelection;
   onTick: () => void;
+  onLid?: () => void;
   onLanded: () => void;
   crate?: CrateDefinition;
 }
@@ -26,7 +27,7 @@ const START_DELAY_MS = 200;
  * assets/animation curve). A single sealed box shakes, its lid flies off, and the already-frozen
  * winner pops out — RANK-021/CODE-019 still apply: this component only presents `frozenSelection`.
  */
-export function BlindboxReveal({ frozenSelection, onTick, onLanded, crate = CRATES[0]! }: BlindboxRevealProps) {
+export function BlindboxReveal({ frozenSelection, onTick, onLid, onLanded, crate = CRATES[0]! }: BlindboxRevealProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const landedRef = useRef(false);
   const rarity = RARITY_STYLE[frozenSelection.winner.rarity];
@@ -38,7 +39,7 @@ export function BlindboxReveal({ frozenSelection, onTick, onLanded, crate = CRAT
     for (let i = 0; i < 4; i += 1) {
       timers.push(window.setTimeout(() => onTick(), START_DELAY_MS + ((i + 1) * SHAKE_MS) / 4));
     }
-    timers.push(window.setTimeout(() => setPhase("opening"), START_DELAY_MS + SHAKE_MS));
+    timers.push(window.setTimeout(() => { setPhase("opening"); onLid?.(); }, START_DELAY_MS + SHAKE_MS));
     timers.push(window.setTimeout(() => setPhase("revealed"), START_DELAY_MS + SHAKE_MS + LID_MS));
     timers.push(
       window.setTimeout(() => {
@@ -48,7 +49,7 @@ export function BlindboxReveal({ frozenSelection, onTick, onLanded, crate = CRAT
       }, START_DELAY_MS + SHAKE_MS + LID_MS + POP_MS + 250),
     );
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [onTick, onLanded]);
+  }, [onTick, onLid, onLanded]);
 
   return (
     <div

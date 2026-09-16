@@ -19,7 +19,7 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: [path.resolve(process.cwd(), "src/test/setup.ts")],
-    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**"],
+    exclude: ["**/node_modules/**", "**/dist/**", "**/tests/e2e/**", "**/.local-archive/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

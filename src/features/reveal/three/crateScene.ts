@@ -7,15 +7,17 @@ export type CratePose = "idle" | "shaking" | "opening" | "revealed";
 export interface CrateScene {
   pose: (pose: CratePose) => void;
   turn: (direction: number) => void;
+  hitTest: (x: number, y: number) => boolean;
+  hover: (active: boolean) => void;
   dispose: () => void;
   tier: ResolvedCrateTier;
 }
 
 /**
  * Dual-Tier 3D Crate Scene:
- * - Mobile Tier: Ultra-lightweight, 30-40fps, battery-saving, zero shadow overhead.
- * - Desktop Tier: High-fidelity, 60fps, PCFSoftShadows, interior glowing core,
- *   3D golden burst particles, and smooth pointer-drag rotation with inertia.
+ * - Mobile: 30 fps, capped resolution, no shadow maps, 24 burst particles.
+ * - Desktop: 60 fps, PCF shadow maps, interior light and 80 burst particles.
+ * Input lives in ThreeCrate so fallback and WebGL share the same click/drag rules.
  */
 export function createCrateScene(
   host: HTMLElement,
@@ -41,10 +43,10 @@ export function createCrateScene(
 
   if (isDesktop) {
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
   }
 
-  canvas.style.cssText = "width:100%;height:100%;display:block;touch-action:none;cursor:grab";
+  canvas.style.cssText = "width:100%;height:100%;display:block;pointer-events:none";
   canvas.setAttribute("aria-hidden", "true");
   canvas.dataset.testid = "three-crate-canvas";
   canvas.dataset.tier = tier;
@@ -53,7 +55,7 @@ export function createCrateScene(
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 40);
   camera.position.set(0, 2.5, 6.8);
-  camera.lookAt(0, 0.25, 0);
+  camera.lookAt(0, 0, 0);
 
   scene.add(new THREE.HemisphereLight(0xdcecff, 0x33303d, isDesktop ? 3.2 : 3));
   const light = new THREE.DirectionalLight(0xffe0a3, isDesktop ? 4.5 : 4);
@@ -123,7 +125,7 @@ export function createCrateScene(
   // Metal corner guards
   for (const x of [-1.16, 1.16]) {
     for (const z of [-0.83, 0.83]) {
-      box(group, x, 0, z, 0.13, 1.35, 0.16, metal);
+      box(group, x, 0, z, 0.13, 1.35, 0.16, dark);
       for (const y of [-0.6, 0.58]) box(group, x, y, z, 0.23, 0.2, 0.23, metal);
     }
   }
@@ -131,7 +133,8 @@ export function createCrateScene(
   // Latches & front clasp
   for (const x of [-0.85, 0.85]) {
     box(group, x, 0.1, 0.93, 0.15, 1.2, 0.08, dark);
-    box(group, x, 0.42, 0.99, 0.22, 0.35, 0.08, metal);
+    box(group, x, 0.42, 0.99, 0.22, 0.35, 0.08, dark);
+    box(group, x, 0.48, 1.04, 0.12, 0.08, 0.035, metal);
   }
 
   // Hinged lid
@@ -139,10 +142,26 @@ export function createCrateScene(
   hinge.position.set(0, 0.69, -0.85);
   group.add(hinge);
   box(hinge, 0, 0.08, 0.85, 2.54, 0.2, 1.8, shell);
-  for (const z of [0, 1.7]) box(hinge, 0, 0.13, z, 2.56, 0.08, 0.08, metal);
-  for (const x of [-1.2, 1.2]) box(hinge, x, 0.13, 0.85, 0.08, 0.08, 1.75, metal);
-  box(hinge, 0, 0.23, 0.8, 0.9, 0.12, 0.13, dark);
-  for (const x of [-0.4, 0.4]) box(hinge, x, 0.17, 0.8, 0.12, 0.18, 0.16, metal);
+  for (const z of [0, 1.7]) box(hinge, 0, 0.13, z, 2.56, 0.08, 0.08, dark);
+  for (const x of [-1.2, 1.2]) box(hinge, x, 0.13, 0.85, 0.08, 0.08, 1.75, dark);
+  // Raised, hollow handle and corner caps follow the supplied hardware silhouettes.
+  box(hinge, 0, 0.4, 0.48, 0.84, 0.12, 0.13, dark);
+  for (const x of [-0.4, 0.4]) box(hinge, x, 0.28, 0.48, 0.12, 0.3, 0.16, metal);
+  for (const x of [-1.16, 1.16]) for (const z of [0.05, 1.65]) {
+    box(hinge, x, 0.1, z, 0.25, 0.23, 0.23, metal);
+  }
+  for (const x of [-1.29, 1.29]) {
+    for (const z of [-0.32, 0.32]) box(group, x, 0.2, z, 0.08, 0.28, 0.08, metal);
+    box(group, x, 0.1, 0, 0.1, 0.08, 0.7, dark);
+  }
+  if (id === "crate_food") {
+    const lockRingGeo = new THREE.TorusGeometry(0.09, 0.024, 6, 16);
+    geometries.add(lockRingGeo);
+    const lockRing = new THREE.Mesh(lockRingGeo, metal);
+    lockRing.position.set(1.09, 0.38, 0.96);
+    group.add(lockRing);
+    box(group, 1.09, 0.24, 0.96, 0.2, 0.24, 0.1, metal);
+  }
 
   // Turntable stage disk
   const diskGeo = new THREE.CylinderGeometry(1.9, 2.05, 0.12, isDesktop ? 64 : 48);
@@ -167,14 +186,23 @@ export function createCrateScene(
   const interiorLight = new THREE.PointLight(accent, 0, 5);
   interiorLight.position.set(0, -0.1, 0);
   group.add(interiorLight);
+  const beamGeometry = new THREE.CylinderGeometry(1.15, 0.65, 2.1, 24, 1, true);
+  geometries.add(beamGeometry);
+  const beamMaterial = new THREE.MeshBasicMaterial({ color: accent, transparent: true,
+    opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  materials.add(beamMaterial);
+  const beam = new THREE.Mesh(beamGeometry, beamMaterial);
+  beam.position.y = 1.05;
+  beam.visible = false;
+  group.add(beam);
 
   // 3D Burst Particles for Desktop Tier
   let particlePoints: THREE.Points | undefined;
   let particlePositions: Float32Array | undefined;
   let particleVelocities: Float32Array | undefined;
-  const particleCount = isDesktop ? 120 : 0;
+  const particleCount = isDesktop ? 80 : 24;
 
-  if (isDesktop) {
+  {
     const pGeo = new THREE.BufferGeometry();
     geometries.add(pGeo);
     particlePositions = new Float32Array(particleCount * 3);
@@ -195,6 +223,7 @@ export function createCrateScene(
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
     materials.add(pMat);
     particlePoints = new THREE.Points(pGeo, pMat);
@@ -208,6 +237,8 @@ export function createCrateScene(
   let started = performance.now();
   let angle = -0.42;
   let lastFrame = 0;
+  let hovered = false;
+  const raycaster = new THREE.Raycaster();
 
   const fail = () => {
     if (!disposed && !failed) {
@@ -230,6 +261,8 @@ export function createCrateScene(
     const { width, height } = host.getBoundingClientRect();
     if (width <= 0 || height <= 0 || disposed) return;
     camera.aspect = width / height;
+    camera.position.set(0, 2.5, Math.max(6.1, 3.5 / camera.aspect));
+    camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     draw();
@@ -251,6 +284,8 @@ export function createCrateScene(
             ? -1.9
             : 0;
       core.scale.y = pose === "revealed" ? 1.8 : 1;
+      beam.visible = pose === "opening" || pose === "revealed";
+      beamMaterial.opacity = beam.visible ? Math.min(0.12, elapsed / 3500) : 0;
 
       // Radiant interior light animation
       if (pose === "opening") {
@@ -263,7 +298,7 @@ export function createCrateScene(
       }
 
       // 3D particles animation
-      if (isDesktop && particlePoints && particlePositions && particleVelocities) {
+      if (particlePoints && particlePositions && particleVelocities) {
         const mat = particlePoints.material as THREE.PointsMaterial;
         if (pose === "opening" || pose === "revealed") {
           mat.opacity = Math.min(0.9, mat.opacity + 0.04);
@@ -296,98 +331,67 @@ export function createCrateScene(
     }
   }
 
-  // UV reference panels
+  // Original images are unchanged. Each face samples its own orthographic region;
+  // a perspective thumbnail is never projected across the front of the chest.
   type Window = [number, number, number, number];
-  function panel(
-    image: HTMLImageElement,
-    uv: Window,
-    parent: THREE.Group,
-    width: number,
-    height: number,
-    position: [number, number, number],
-    rotation: [number, number, number],
-  ) {
-    const texture = new THREE.Texture(image);
-    textures.add(texture);
-    texture.colorSpace = THREE.SRGBColorSpace;
-    texture.offset.set(uv[0], 1 - uv[1] - uv[3]);
-    texture.repeat.set(uv[2], uv[3]);
-    texture.needsUpdate = true;
-    const mat = new THREE.MeshStandardMaterial({
-      map: texture,
-      roughness: 0.65,
-      metalness: 0.15,
-    });
-    materials.add(mat);
-    const geometry = new THREE.PlaneGeometry(width, height);
-    geometries.add(geometry);
-    const mesh = new THREE.Mesh(geometry, mat);
-    mesh.position.set(...position);
-    mesh.rotation.set(...rotation);
-    if (isDesktop) {
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-    }
-    parent.add(mesh);
-  }
-
-  const artMap: Record<string, { file: string; uv: [number, number, number, number] }> = {
-    crate_food: { file: "food.png", uv: [0.18, 0.4, 0.4, 0.4] },
-    crate_snack: { file: "snack.png", uv: [0.17, 0.48, 0.64, 0.35] },
-    crate_drinking: { file: "drinking.png", uv: [0.2, 0.3, 0.6, 0.45] },
-  };
-
-  const artConfig = artMap[id];
-  if (artConfig) {
+  type Face = { uv: Window; parent: THREE.Group; w: number; h: number;
+    pos: [number, number, number]; rot: [number, number, number] };
+  function loadFaces(file: string, faces: Face[]) {
     const image = new Image();
     image.onload = () => {
       if (disposed || failed) return;
-      panel(image, artConfig.uv, group, 1.68, 1.03, [0, 0, 0.901], [0, 0, 0]);
+      const texture = new THREE.Texture(image);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+      texture.needsUpdate = true;
+      textures.add(texture);
+      // Baked illustration lighting stays intact, without overexposure by scene lights.
+      const mat = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
+      materials.add(mat);
+      for (const face of faces) {
+        const geometry = new THREE.PlaneGeometry(face.w, face.h);
+        geometries.add(geometry);
+        const uv = geometry.getAttribute("uv");
+        for (let i = 0; i < uv.count; i++) {
+          uv.setXY(i, face.uv[0] + uv.getX(i) * face.uv[2],
+            1 - face.uv[1] - face.uv[3] + uv.getY(i) * face.uv[3]);
+        }
+        const mesh = new THREE.Mesh(geometry, mat);
+        mesh.position.set(...face.pos);
+        mesh.rotation.set(...face.rot);
+        face.parent.add(mesh);
+      }
+      canvas.dataset.art = "ready";
       draw();
     };
-    image.onerror = () => { /* Procedural materials remain a complete local fallback. */ };
-    image.src = `/images/crates/${artConfig.file}`;
+    image.onerror = () => { canvas.dataset.art = "unavailable"; };
+    image.src = `/images/crates/surfaces/${file}`;
   }
-
-  // Pointer drag to rotate freely
-  let isDragging = false;
-  let prevClientX = 0;
-  const onPointerDown = (e: PointerEvent) => {
-    if (pose !== "idle") return;
-    isDragging = true;
-    prevClientX = e.clientX;
-    canvas.style.cursor = "grabbing";
-    try {
-      canvas.setPointerCapture(e.pointerId);
-    } catch {
-      // Ignore if browser restricts pointer capture
-    }
-  };
-
-  const onPointerMove = (e: PointerEvent) => {
-    if (!isDragging || pose !== "idle") return;
-    const deltaX = e.clientX - prevClientX;
-    prevClientX = e.clientX;
-    angle += deltaX * (isDesktop ? 0.012 : 0.016);
-    group.rotation.y = angle;
-    draw();
-  };
-
-  const onPointerUp = (e: PointerEvent) => {
-    if (!isDragging) return;
-    isDragging = false;
-    canvas.style.cursor = "grab";
-    try {
-      canvas.releasePointerCapture(e.pointerId);
-    } catch {
-      // Ignore if pointer capture was already released
-    }
-  };
-
-  canvas.addEventListener("pointerdown", onPointerDown);
-  canvas.addEventListener("pointermove", onPointerMove);
-  canvas.addEventListener("pointerup", onPointerUp);
-  canvas.addEventListener("pointercancel", onPointerUp);
+  const front = (uv: Window): Face => ({ uv, parent: group, w: 2.46, h: 1.29,
+    pos: [0, 0, 0.895], rot: [0, 0, 0] });
+  const back = (uv: Window): Face => ({ ...front(uv), pos: [0, 0, -0.895], rot: [0, Math.PI, 0] });
+  const side = (uv: Window, sign: number): Face => ({ uv, parent: group, w: 1.7, h: 1.29,
+    pos: [sign * 1.255, 0, 0], rot: [0, sign * Math.PI / 2, 0] });
+  const top = (uv: Window): Face => ({ uv, parent: hinge, w: 2.46, h: 1.7,
+    pos: [0, 0.185, 0.85], rot: [-Math.PI / 2, 0, 0] });
+  const lip = (uv: Window): Face => ({ uv, parent: hinge, w: 2.46, h: 0.19,
+    pos: [0, 0.075, 1.756], rot: [0, 0, 0] });
+  if (id === "crate_food") {
+    loadFaces("food.png", [front([.016, .058, .326, .178]),
+      back([.361, .058, .342, .178]),
+      side([.727, .06, .255, .175], 1), side([.727, .06, .255, .175], -1),
+      top([.371, .304, .287, .239]), lip([.017, .025, .325, .032])]);
+  } else if (id === "crate_drinking") {
+    loadFaces("party.png", [front([.018, .103, .346, .17]),
+      back([.389, .102, .337, .171]),
+      side([.833, .111, .149, .153], 1), side([.833, .111, .149, .153], -1),
+      top([.359, .332, .298, .214]), lip([.018, .052, .346, .05])]);
+  } else if (id === "crate_snack") {
+    loadFaces("snack-front.png", [front([.025, .452, .95, .497]),
+      back([.025, .452, .95, .497]), lip([.025, .326, .95, .11])]);
+    loadFaces("snack-side.png", [side([.113, .453, .777, .49], 1), side([.113, .453, .777, .49], -1)]);
+    loadFaces("snack-top.png", [top([.025, .182, .95, .64])]);
+  }
 
   const observer = new ResizeObserver(resize);
   observer.observe(host);
@@ -410,14 +414,40 @@ export function createCrateScene(
     tier,
     pose(next) {
       pose = next;
+      group.position.y = 0;
+      hovered = false;
+      metal.emissive.set("#000000");
+      canvas.dataset.pose = next;
       started = performance.now();
       lastFrame = 0;
       cancelAnimationFrame(frame);
       animate(started);
     },
+    hitTest(x, y) {
+      if (disposed || failed) return false;
+      const bounds = canvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return false;
+      scene.updateMatrixWorld(true);
+      raycaster.setFromCamera(new THREE.Vector2(
+        (x - bounds.left) / bounds.width * 2 - 1,
+        -(y - bounds.top) / bounds.height * 2 + 1), camera);
+      return raycaster.intersectObject(group, true).some(hit => hit.object instanceof THREE.Mesh && hit.object !== beam);
+    },
+    hover(active) {
+      if (disposed || failed || pose !== "idle" || hovered === active) return;
+      hovered = active;
+      group.position.y = active ? 0.045 : 0;
+      trim.emissive.set(active ? accent : "#000000");
+      trim.emissiveIntensity = active ? 1.5 : 0;
+      metal.emissive.set(active ? accent : "#000000");
+      metal.emissiveIntensity = active ? 0.22 : 0;
+      canvas.dataset.hovered = String(active);
+      draw();
+    },
     turn(direction) {
       angle += (direction * Math.PI) / 6;
       group.rotation.y = angle;
+      canvas.dataset.angle = String(angle);
       draw();
     },
     dispose() {
@@ -427,10 +457,6 @@ export function createCrateScene(
       observer.disconnect();
       document.removeEventListener("visibilitychange", visibility);
       canvas.removeEventListener("webglcontextlost", contextLost);
-      canvas.removeEventListener("pointerdown", onPointerDown);
-      canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerup", onPointerUp);
-      canvas.removeEventListener("pointercancel", onPointerUp);
       for (const geometry of geometries) geometry.dispose();
       for (const mat of materials) mat.dispose();
       for (const texture of textures) texture.dispose();

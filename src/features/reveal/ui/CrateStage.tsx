@@ -20,6 +20,7 @@ interface CrateStageProps {
   crate?: CrateDefinition;
   locationHint?: { label?: string; position?: { latitude: number; longitude: number } };
   onLanded: () => void;
+  onOpen: () => void;
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
@@ -43,6 +44,7 @@ export function CrateStage({
   crate,
   locationHint,
   onLanded,
+  onOpen,
   onAccept,
   onRespin,
   onEditPool,
@@ -70,6 +72,19 @@ export function CrateStage({
   }, [phase, audio, frozenSelection]);
 
   const handleTick = useCallback(() => audio.playTick(), [audio]);
+  const handleLid = useCallback(() => audio.playCrateLid(), [audio]);
+  const handleHover = useCallback(() => audio.playCrateHover(), [audio]);
+  const handleInteract = useCallback(() => audio.recover(), [audio]);
+
+  const idleCrate = (disabled = false) => <ThreeCrate
+    key={activeCrate.id}
+    crate={activeCrate}
+    reducedMotion={reducedMotion}
+    disabled={disabled || eligiblePool.length === 0}
+    onOpen={onOpen}
+    onHover={handleHover}
+    onInteract={handleInteract}
+  />;
 
   return (
     <section
@@ -86,8 +101,8 @@ export function CrateStage({
 
       {/* Stage Body - directly host the reel */}
       <div className="relative">
-        {phase === "configuring" && (revealThemeId === "blindbox" && !reducedMotion
-          ? <ThreeCrate key={activeCrate.id} crate={activeCrate} />
+        {(phase === "configuring" || phase === "blocked") && (revealThemeId === "blindbox"
+          ? idleCrate(phase === "blocked")
           : <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} />)}
 
         {phase === "spinning" && !reducedMotion && frozenSelection && (
@@ -98,6 +113,7 @@ export function CrateStage({
             decoyPool={frozenSelection.eligiblePool}
             caseReelDurationMs={spinProfile.durationMs}
             onTick={handleTick}
+            onLid={handleLid}
             onLanded={onLanded}
           />
         )}
@@ -117,7 +133,7 @@ export function CrateStage({
 
         {phase === "revealed" && frozenSelection && (
           <>
-            <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} winnerItem={frozenSelection.winner} />
+            {revealThemeId === "blindbox" ? idleCrate(modalOpen) : <IdleReel items={eligiblePool} probabilities={nextDrawOdds?.probabilities} winnerItem={frozenSelection.winner} />}
             <WinnerModal
               open={modalOpen}
               winner={frozenSelection.winner}
@@ -129,6 +145,7 @@ export function CrateStage({
               onRespin={onRespin}
               onEditPool={onEditPool}
               onClose={() => setDismissedSelection(frozenSelection)}
+              onHover={handleHover}
             />
           </>
         )}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { CrateDefinition } from "@/data/crates";
 
 interface CrateCardProps {
@@ -5,23 +6,40 @@ interface CrateCardProps {
   isSelected: boolean;
   itemCount: number;
   disabled?: boolean;
+  shortcutIndex?: number;
   onSelect: (crateId: CrateDefinition["id"]) => void;
+  onHover?: () => void;
 }
 
 /**
  * CS:GO Armory / Market Weapon Case Card:
  * Renders the authentic 3D isometric military Pelican weapon case,
  * ambient theme-colored backlight, tactical stencil series, clean case title,
- * and CS:GO market-style metadata.
+ * 3D mouse parallax tilt, and tactile hotkey badges.
  */
 export function CrateCard({
   crate,
   isSelected,
   itemCount,
   disabled = false,
+  shortcutIndex,
   onSelect,
+  onHover,
 }: CrateCardProps) {
   const { theme } = crate;
+  const [tilt, setTilt] = useState({ rotateX: 0, rotateY: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ rotateX: -y * 12, rotateY: x * 12 });
+  };
+
+  const handleMouseLeave = () => {
+    setTilt({ rotateX: 0, rotateY: 0 });
+  };
 
   return (
     <button
@@ -31,6 +49,9 @@ export function CrateCard({
       aria-label={`${crate.name}, ${itemCount} món, ${crate.tagline}`}
       disabled={disabled}
       onClick={() => onSelect(crate.id)}
+      onPointerEnter={onHover}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       className={`group relative flex flex-col items-center justify-between overflow-hidden rounded-xl border p-2.5 sm:p-3 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-400 select-none ${
         isSelected
           ? `${theme.activeBorderClass} ${theme.glowClass} bg-gradient-to-b from-canvas-200/90 via-canvas-100/95 to-canvas-200/90 -translate-y-1 shadow-2xl`
@@ -39,8 +60,25 @@ export function CrateCard({
       style={{
         minWidth: 0,
         flex: "1 1 0px",
+        transform:
+          tilt.rotateX !== 0 || tilt.rotateY !== 0
+            ? `perspective(600px) rotateX(${tilt.rotateX}deg) rotateY(${tilt.rotateY}deg) scale3d(1.02, 1.02, 1.02)`
+            : undefined,
+        transition:
+          tilt.rotateX !== 0 || tilt.rotateY !== 0
+            ? "transform 0.08s ease-out"
+            : "transform 0.3s ease-in-out, border-color 0.2s, box-shadow 0.2s",
       }}
     >
+      {/* Keyboard Shortcut Badge */}
+      {shortcutIndex !== undefined && (
+        <span
+          className="pointer-events-none absolute top-2 right-2 z-20 rounded border border-white/20 bg-black/60 px-1.5 py-0.5 text-[10px] font-mono font-bold text-white/70 shadow group-hover:text-gold-300 group-hover:border-gold-400/50 transition-colors"
+          title={`Phím tắt số ${shortcutIndex}`}
+        >
+          [{shortcutIndex}]
+        </span>
+      )}
       {/* Top Ambient Glow Cone */}
       <div
         aria-hidden

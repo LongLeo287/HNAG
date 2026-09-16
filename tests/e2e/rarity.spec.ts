@@ -7,7 +7,7 @@ for (const mode of ["Case Reel", "Blindbox", "Vòng quay", "Slot Machine", "Lậ
     await page.clock.setFixedTime(new Date("2026-09-12T10:00:00+07:00"));
     await page.goto("/");
     await page.getByRole("radiogroup", { name: "Chọn kiểu mở kết quả" }).getByRole("radio", { name: new RegExp(mode) }).click();
-    await page.getByRole("button", { name: /mở hộp/i }).click();
+    await page.getByRole("button", { name: mode === "Blindbox" ? /Mở rương/ : /mở hộp/i }).click();
     const result = page.getByRole("dialog", { name: "Kết quả mở hòm" });
     await expect(result).toBeVisible({ timeout: 10000 });
     await expect(result.getByRole("region", { name: "Tỉ lệ quay tiếp" }).locator("dd")).toHaveText(["80%", "16%", "3,5%", "0,5%"]);

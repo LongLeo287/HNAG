@@ -6,14 +6,16 @@ interface FoodDrinkToggleProps {
   foodCount?: number;
   drinkCount?: number;
   onChange: (value: ItemKind) => void;
+  onHover?: () => void;
 }
 
-/** UI-004: Tactical segmented radio control for FOOD vs DRINK with live candidate counts. */
+/** UI-004: Tactical segmented radio control for FOOD vs DRINK with live candidate counts and keyboard shortcuts [F]/[D]. */
 export function FoodDrinkToggle({
   value,
   foodCount,
   drinkCount,
   onChange,
+  onHover,
 }: FoodDrinkToggleProps) {
   return (
     <div
@@ -26,6 +28,7 @@ export function FoodDrinkToggle({
         role="radio"
         aria-checked={value === "FOOD"}
         onClick={() => onChange("FOOD")}
+        onPointerEnter={onHover}
         className={cx(
           "group flex min-h-10 items-center gap-2 rounded-lg px-4 sm:px-5 text-xs sm:text-sm font-bold transition-all",
           value === "FOOD"
@@ -35,6 +38,12 @@ export function FoodDrinkToggle({
       >
         <span className="text-sm sm:text-base">🍱</span>
         <span>Món ăn</span>
+        <kbd className={cx(
+          "hidden sm:inline-block rounded px-1.5 py-0.2 text-[10px] font-mono font-bold transition-colors",
+          value === "FOOD" ? "bg-black/20 text-white" : "bg-white/10 text-ink-500"
+        )}>
+          F
+        </kbd>
         {foodCount !== undefined && (
           <span
             className={cx(
@@ -54,6 +63,7 @@ export function FoodDrinkToggle({
         role="radio"
         aria-checked={value === "DRINK"}
         onClick={() => onChange("DRINK")}
+        onPointerEnter={onHover}
         className={cx(
           "group flex min-h-10 items-center gap-2 rounded-lg px-4 sm:px-5 text-xs sm:text-sm font-bold transition-all",
           value === "DRINK"
@@ -63,6 +73,12 @@ export function FoodDrinkToggle({
       >
         <span className="text-sm sm:text-base">🧋</span>
         <span>Đồ uống</span>
+        <kbd className={cx(
+          "hidden sm:inline-block rounded px-1.5 py-0.2 text-[10px] font-mono font-bold transition-colors",
+          value === "DRINK" ? "bg-black/20 text-white" : "bg-white/10 text-ink-500"
+        )}>
+          D
+        </kbd>
         {drinkCount !== undefined && (
           <span
             className={cx(

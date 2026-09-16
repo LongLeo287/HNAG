@@ -17,6 +17,7 @@ interface ResultActionsProps {
   onAccept: () => void;
   onRespin: () => void;
   onEditPool: () => void;
+  onHover?: () => void;
 }
 
 /** UI-017/FEAT-047: Accept, Re-spin, 4 Food Delivery Apps (GrabFood, ShopeeFood, beFood, Xanh SM), and Exit controls. */
@@ -27,6 +28,7 @@ export function ResultActions({
   onAccept,
   onRespin,
   onEditPool,
+  onHover,
 }: ResultActionsProps) {
   const [platform] = useState(() => detectAppPlatform(typeof navigator === "undefined" ? undefined : navigator));
   const [attemptedApp, setAttemptedApp] = useState<ExternalAppId | null>(null);
@@ -64,10 +66,14 @@ export function ResultActions({
         <button
           type="button"
           onClick={onAccept}
+          onPointerEnter={onHover}
           className="group relative flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-gradient-to-b from-neon-400 to-neon-600 px-5 py-3.5 text-sm font-bold text-white shadow-[0_0_24px_rgba(98,179,39,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_32px_rgba(98,179,39,0.6)] active:scale-[0.98]"
         >
           <span className="text-base">✅</span>
           <span>Chốt món này</span>
+          <kbd className="hidden sm:inline-block rounded border border-black/30 bg-black/15 px-1.5 py-0.5 text-[10px] font-mono font-black text-black">
+            Enter
+          </kbd>
           <div className="pointer-events-none absolute inset-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
         </button>
 
@@ -75,10 +81,14 @@ export function ResultActions({
         <button
           type="button"
           onClick={onRespin}
+          onPointerEnter={onHover}
           className="group relative flex-1 min-w-[140px] inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-white/20 bg-canvas-200 px-5 py-3.5 text-sm font-bold text-ink-900 shadow-md transition-all hover:bg-canvas-300 hover:border-white/30 hover:scale-[1.02] active:scale-[0.98]"
         >
           <span className="text-base">🔁</span>
           <span>Quay tiếp</span>
+          <kbd className="hidden sm:inline-block rounded border border-white/20 bg-white/10 px-1.5 py-0.5 text-[10px] font-mono font-bold text-gold-400">
+            R
+          </kbd>
         </button>
       </div>
 

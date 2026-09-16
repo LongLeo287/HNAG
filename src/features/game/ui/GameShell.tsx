@@ -23,6 +23,10 @@ import { applyHardFilters, applyRespinExclusion, computeWeights, stableSortById 
 import { FoodDrinkToggle } from "./FoodDrinkToggle";
 import { eligibleForCrate, filtersForCrate, initialCrateId } from "../crateFilters";
 import { loadPreferences, savePreferences } from "@/lib/local-preferences";
+import { useKeyboardShortcuts } from "../useKeyboardShortcuts";
+import { KeyboardShortcutsModal } from "./KeyboardShortcutsModal";
+import { cratesForKind } from "@/data/crates";
+import { REVEAL_THEMES } from "@/data/revealThemes";
 
 const BLOCKER_MESSAGE: Record<string, string> = {
   NO_CANDIDATES_KIND: "Chưa có món nào cho lựa chọn này.",
@@ -73,6 +77,7 @@ export function GameShell() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [oddsOpen, setOddsOpen] = useState(false);
   const [poolPreviewOpen, setPoolPreviewOpen] = useState(false);
+  const [shortcutsModalOpen, setShortcutsModalOpen] = useState(false);
 
   const deviceContext = useSmartContext();
   const { resolvedContext } = deviceContext;
@@ -185,6 +190,78 @@ export function GameShell() {
     respin(currentEligiblePool);
   }
 
+  const availableCrates = useMemo(
+    () => cratesForKind(game.draftFilters.kind),
+    [game.draftFilters.kind]
+  );
+
+  useKeyboardShortcuts({
+    onOpenCase: handleOpen,
+    onSelectCrateByIndex: (idx) => {
+      if (game.phase === "spinning") return;
+      const target = availableCrates[idx];
+      if (target) {
+        handleSelectCrate(target.id);
+      }
+    },
+    onCycleCrate: (direction) => {
+      if (game.phase === "spinning" || availableCrates.length <= 1) return;
+      const currentIndex = availableCrates.findIndex((c) => c.id === selectedCrateId);
+      if (currentIndex === -1) return;
+      const nextIndex =
+        (currentIndex + direction + availableCrates.length) % availableCrates.length;
+      const target = availableCrates[nextIndex];
+      if (target) {
+        handleSelectCrate(target.id);
+      }
+    },
+    onToggleKind: (kind) => {
+      if (game.phase === "spinning") return;
+      if (kind !== game.draftFilters.kind) {
+        handleSelectCrate(kind === "DRINK" ? "crate_drink" : DEFAULT_CRATE_ID);
+      }
+    },
+    onCycleTheme: () => {
+      if (game.phase === "spinning") return;
+      const currentIndex = REVEAL_THEMES.findIndex((t) => t.id === revealThemeId);
+      const nextIndex = (currentIndex + 1) % REVEAL_THEMES.length;
+      const nextTheme = REVEAL_THEMES[nextIndex];
+      if (nextTheme) {
+        audio.recover();
+        audio.playEquipCrate();
+        setRevealTheme(nextTheme.id);
+      }
+    },
+    onToggleSettings: () => {
+      if (game.phase === "spinning") return;
+      setSettingsOpen((prev) => !prev);
+    },
+    onToggleSound: () => {
+      setSound(!soundEnabled);
+    },
+    onToggleOdds: () => {
+      setOddsOpen((prev) => !prev);
+    },
+    onToggleCustomPool: () => {
+      if (game.phase === "spinning") return;
+      setDrawerOpen((prev) => !prev);
+    },
+    onToggleShortcutsModal: () => {
+      setShortcutsModalOpen((prev) => !prev);
+    },
+    onRespin: game.phase === "revealed" ? handleRespin : undefined,
+    onAccept: game.phase === "revealed" ? accept : undefined,
+    onCloseModals: () => {
+      if (shortcutsModalOpen) setShortcutsModalOpen(false);
+      if (settingsOpen) setSettingsOpen(false);
+      if (oddsOpen) setOddsOpen(false);
+      if (drawerOpen) setDrawerOpen(false);
+      if (poolPreviewOpen) setPoolPreviewOpen(false);
+    },
+    audio,
+    enabled: true,
+  });
+
   return (
     <div className="relative min-h-dvh flex flex-col bg-canvas-50 text-ink-900 selection:bg-gold-500 selection:text-black">
       {/* Background Landmark Silhouette */}
@@ -205,6 +282,8 @@ export function GameShell() {
         }}
         onOpenSettings={() => setSettingsOpen((prev) => !prev)}
         onOpenOdds={() => setOddsOpen(true)}
+        onOpenShortcuts={() => setShortcutsModalOpen(true)}
+        onHover={() => audio.playUiHover()}
         spinCount={spinCount}
         preferencesDisabled={game.phase === "spinning"}
       />
@@ -234,7 +313,9 @@ export function GameShell() {
         <RevealThemePicker
           value={revealThemeId}
           disabled={game.phase === "spinning"}
+          onHover={() => audio.playUiHover()}
           onChange={(themeId) => {
+            audio.recover();
             audio.playEquipCrate();
             setRevealTheme(themeId);
           }}
@@ -242,9 +323,13 @@ export function GameShell() {
 
         <fieldset disabled={game.phase === "spinning"} className="w-full space-y-2 disabled:opacity-60">
           <legend className="mb-2 text-sm font-semibold text-ink-900">Bạn muốn chọn món ăn hay đồ uống?</legend>
-          <FoodDrinkToggle value={game.draftFilters.kind} onChange={(kind) => {
-            if (kind !== game.draftFilters.kind) handleSelectCrate(kind === "DRINK" ? "crate_drink" : DEFAULT_CRATE_ID);
-          }} />
+          <FoodDrinkToggle
+            value={game.draftFilters.kind}
+            onHover={() => audio.playUiHover()}
+            onChange={(kind) => {
+              if (kind !== game.draftFilters.kind) handleSelectCrate(kind === "DRINK" ? "crate_drink" : DEFAULT_CRATE_ID);
+            }}
+          />
         </fieldset>
 
         <CrateSelectorRack
@@ -253,6 +338,7 @@ export function GameShell() {
           countsByCrate={countsByCrate}
           disabled={game.phase === "spinning"}
           onSelectCrate={handleSelectCrate}
+          onHoverCrate={() => audio.playUiHover()}
         />
 
         {/* Central Crate Showcase Stage (CS:GO style case opening) */}
@@ -274,6 +360,7 @@ export function GameShell() {
               : undefined
           }
           onLanded={landed}
+          onOpen={handleOpen}
           onAccept={accept}
           onRespin={handleRespin}
           onEditPool={() => setDrawerOpen(true)}
@@ -281,14 +368,17 @@ export function GameShell() {
 
         {/* Primary Action Button & Controls: Always mounted so the page never collapses! */}
         <div className="flex w-full flex-col items-center gap-6">
-          <OpenCaseButton
-            onClick={handleOpen}
-            itemCount={currentEligiblePool.length}
-            isSpinning={game.phase === "spinning"}
-            disabled={currentEligiblePool.length === 0 || game.phase === "spinning"}
-            crateName={currentCrate.name}
-            accentHex={currentCrate.theme.primaryHex}
-          />
+          {revealThemeId !== "blindbox" && (
+            <OpenCaseButton
+              onClick={handleOpen}
+              onHover={() => audio.playUiHover()}
+              itemCount={currentEligiblePool.length}
+              isSpinning={game.phase === "spinning"}
+              disabled={currentEligiblePool.length === 0 || game.phase === "spinning"}
+              crateName={currentCrate.name}
+              accentHex={currentCrate.theme.primaryHex}
+            />
+          )}
 
           {/* Subtle quick access pill to view odds in dedicated modal */}
           <button
@@ -436,6 +526,12 @@ export function GameShell() {
           onReset={handleReset}
           activeTab={preferencesTab}
           onTabChange={setPreferencesTab}
+        />
+
+        {/* Keyboard Shortcuts Modal */}
+        <KeyboardShortcutsModal
+          open={shortcutsModalOpen}
+          onClose={() => setShortcutsModalOpen(false)}
         />
       </main>
     </div>

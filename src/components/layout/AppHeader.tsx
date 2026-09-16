@@ -6,6 +6,8 @@ interface AppHeaderProps {
   onOpenPreferences: (initialTab?: "add" | "builtin") => void;
   onOpenSettings: () => void;
   onOpenOdds: () => void;
+  onOpenShortcuts?: () => void;
+  onHover?: () => void;
   /** This browser's own spin count only — #HNAG has no backend/M0-M1, so there is no real
    * cross-user total to show (DS-029: never present a fabricated number as a live statistic). */
   spinCount?: number;
@@ -18,6 +20,8 @@ export function AppHeader({
   onOpenPreferences,
   onOpenSettings,
   onOpenOdds,
+  onOpenShortcuts,
+  onHover,
   spinCount = 0,
   preferencesDisabled = false,
 }: AppHeaderProps) {
@@ -84,14 +88,29 @@ export function AppHeader({
           <button
             type="button"
             onClick={() => onSoundChange(!soundEnabled)}
+            onPointerEnter={onHover}
             className="flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-canvas-200 px-3 text-xs font-medium text-ink-900 transition-colors hover:bg-canvas-300 hover:border-white/20 cursor-pointer"
-            title={soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
+            title={soundEnabled ? "Tắt âm thanh (M)" : "Bật âm thanh (M)"}
             aria-label={soundEnabled ? "Tắt âm thanh" : "Bật âm thanh"}
           >
             <span>{soundEnabled ? "🔊" : "🔇"}</span>
             <span className="hidden sm:inline">
               {soundEnabled ? "Âm thanh" : "Tắt tiếng"}
             </span>
+          </button>
+
+          {/* Quick Shortcuts Cheatsheet Button */}
+          <button
+            type="button"
+            onClick={onOpenShortcuts}
+            onPointerEnter={onHover}
+            className="hidden sm:flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-canvas-200 px-3 text-xs font-medium text-ink-900 transition-colors hover:bg-canvas-300 hover:border-gold-400/40 cursor-pointer"
+            title="Xem toàn bộ phím tắt & chuột (Nhấn ?)"
+            aria-label="Xem phím tắt"
+          >
+            <span>⌨️</span>
+            <span>Phím tắt</span>
+            <kbd className="rounded border border-white/20 bg-canvas-300 px-1 py-0.2 text-[10px] font-mono text-gold-400 font-bold">?</kbd>
           </button>
 
           {/* Menu Dropdown Container */}
@@ -156,16 +175,42 @@ export function AppHeader({
                       setMenuOpen(false);
                       onOpenSettings();
                     }}
+                    onPointerEnter={onHover}
                     className="flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-left text-xs transition-colors hover:bg-white/10 group cursor-pointer"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold-500/20 text-gold-400 group-hover:scale-105 transition-transform">
                       <span className="text-base">⚙️</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-white group-hover:text-gold-300 transition-colors">Cài đặt hệ thống</div>
+                      <div className="font-semibold text-white group-hover:text-gold-300 transition-colors flex items-center justify-between">
+                        <span>Cài đặt hệ thống</span>
+                        <kbd className="rounded border border-white/20 bg-canvas-300 px-1.5 py-0.5 text-[10px] font-mono text-gold-400">S</kbd>
+                      </div>
                       <div className="text-[11px] text-ink-500 truncate">Khung cảnh, chuyển động & âm thanh</div>
                     </div>
-                    <span className="text-ink-700 group-hover:text-white transition-colors text-xs">→</span>
+                  </button>
+
+                  {/* 2.5 Phím tắt & chuột (Keyboard Shortcuts) */}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      onOpenShortcuts?.();
+                    }}
+                    onPointerEnter={onHover}
+                    className="flex items-center gap-3 w-full rounded-xl px-3 py-2.5 text-left text-xs transition-colors hover:bg-white/10 group cursor-pointer"
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 group-hover:scale-105 transition-transform">
+                      <span className="text-base">⌨️</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-white group-hover:text-cyan-300 transition-colors flex items-center justify-between">
+                        <span>Phím tắt & chuột</span>
+                        <kbd className="rounded border border-white/20 bg-canvas-300 px-1.5 py-0.5 text-[10px] font-mono text-cyan-400">?</kbd>
+                      </div>
+                      <div className="text-[11px] text-ink-500 truncate">Xem toàn bộ hotkey & mẹo chuột</div>
+                    </div>
                   </button>
 
                   {/* 3. Thêm món riêng (Add dish) */}

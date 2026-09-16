@@ -17,6 +17,7 @@ interface WinnerModalProps {
   onRespin: () => void;
   onEditPool: () => void;
   onClose: () => void;
+  onHover?: () => void;
 }
 
 /**
@@ -35,6 +36,7 @@ export function WinnerModal({
   onRespin,
   onEditPool,
   onClose,
+  onHover,
 }: WinnerModalProps) {
   const mounted = useSyncExternalStore(
     () => () => {},
@@ -82,8 +84,9 @@ export function WinnerModal({
           type="button"
           onClick={onClose}
           className="absolute top-3.5 right-3.5 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-canvas-200/80 hover:bg-canvas-300 text-ink-500 hover:text-white transition-colors"
-          title="Đóng cửa sổ"
+          title="Đóng cửa sổ (Esc)"
           aria-label="Đóng"
+          onPointerEnter={onHover}
         >
           <span className="text-sm font-bold leading-none">✕</span>
         </button>
@@ -99,6 +102,7 @@ export function WinnerModal({
             onAccept={onAccept}
             onRespin={onRespin}
             onEditPool={onEditPool}
+            onHover={onHover}
           />
         </div>
       </div>
