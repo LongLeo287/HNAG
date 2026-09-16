@@ -6,7 +6,10 @@ import type { ResolvedCrateTier } from "./deviceTier";
 export type CratePose = "idle" | "shaking" | "opening" | "revealed";
 export interface CrateScene {
   pose: (pose: CratePose) => void;
-  turn: (direction: number) => void;
+  turn: (direction: number, pitch?: number) => void;
+  setAngle?: (yaw: number, pitch: number) => void;
+  zoom?: (delta: number) => void;
+  resetRotation?: () => void;
   hitTest: (x: number, y: number) => boolean;
   hover: (active: boolean) => void;
   dispose: () => void;
@@ -91,6 +94,7 @@ export function createCrateScene(
 
   const group = new THREE.Group();
   group.rotation.y = -0.42;
+  group.rotation.x = 0.22;
   scene.add(group);
 
   function box(
@@ -235,7 +239,14 @@ export function createCrateScene(
   let frame = 0;
   let pose: CratePose = "idle";
   let started = performance.now();
-  let angle = -0.42;
+  let angleY = -0.42;
+  let angleX = 0.22;
+  let velY = 0;
+  let velX = 0;
+  let isInteracting = false;
+  let interactTimeout: ReturnType<typeof setTimeout> | undefined;
+  let cameraDist = 6.8;
+  let targetCameraDist = 6.8;
   let lastFrame = 0;
   let hovered = false;
   const raycaster = new THREE.Raycaster();
@@ -261,8 +272,8 @@ export function createCrateScene(
     const { width, height } = host.getBoundingClientRect();
     if (width <= 0 || height <= 0 || disposed) return;
     camera.aspect = width / height;
-    camera.position.set(0, 2.5, Math.max(6.1, 3.5 / camera.aspect));
-    camera.lookAt(0, 0, 0);
+    camera.position.set(0, 2.2 + angleX * 0.6, Math.max(6.1, 3.5 / camera.aspect));
+    camera.lookAt(0, 0.1, 0);
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     draw();
@@ -275,8 +286,39 @@ export function createCrateScene(
     const elapsed = now - started;
     if (now - lastFrame >= 1000 / targetFps) {
       lastFrame = now;
-      group.rotation.y = angle;
-      group.rotation.z = pose === "shaking" ? Math.sin(elapsed * 0.035) * 0.04 : 0;
+
+      // Multi-dimensional inertia & damping when user finishes drag
+      if (!isInteracting && pose === "idle") {
+        if (Math.abs(velY) > 0.0002 || Math.abs(velX) > 0.0002) {
+          angleY += velY;
+          angleX = Math.max(-0.85, Math.min(0.75, angleX + velX));
+          velY *= 0.92;
+          velX *= 0.92;
+        }
+      }
+
+      // Smooth camera zoom
+      if (Math.abs(targetCameraDist - cameraDist) > 0.01) {
+        cameraDist += (targetCameraDist - cameraDist) * 0.15;
+        camera.position.z = cameraDist;
+      }
+      camera.position.y = 2.2 + angleX * 0.6;
+      camera.lookAt(0, 0.1, 0);
+
+      const idleFloatY = pose === "idle" ? Math.sin(now * 0.0016) * 0.035 : 0;
+      const idleBobPitch = pose === "idle" ? Math.sin(now * 0.0012) * 0.012 : 0;
+
+      group.rotation.x = angleX + idleBobPitch;
+      group.rotation.y = angleY;
+      group.rotation.z =
+        (pose === "shaking" ? Math.sin(elapsed * 0.035) * 0.04 : 0) +
+        Math.sin(angleY * 2) * angleX * 0.04;
+      group.position.y = (hovered ? 0.05 : 0) + idleFloatY;
+
+      disk.rotation.y = angleY * 0.25;
+      ring.rotation.z = angleY * 0.25;
+
+      canvas.dataset.angle = `${angleY.toFixed(3)},${angleX.toFixed(3)}`;
       hinge.rotation.x =
         pose === "opening"
           ? -Math.min(1, elapsed / 450) * 1.9
@@ -326,8 +368,17 @@ export function createCrateScene(
 
       draw();
     }
-    if (pose === "shaking" || (pose === "opening" && elapsed < 500) || (isDesktop && pose === "revealed")) {
+    if (
+      pose === "shaking" ||
+      (pose === "opening" && elapsed < 500) ||
+      (isDesktop && pose === "revealed") ||
+      isInteracting ||
+      Math.abs(velY) > 0.0002 ||
+      Math.abs(velX) > 0.0002
+    ) {
       frame = requestAnimationFrame(animate);
+    } else {
+      frame = 0;
     }
   }
 
@@ -444,10 +495,65 @@ export function createCrateScene(
       canvas.dataset.hovered = String(active);
       draw();
     },
-    turn(direction) {
-      angle += (direction * Math.PI) / 6;
-      group.rotation.y = angle;
-      canvas.dataset.angle = String(angle);
+    turn(direction, pitch = 0) {
+      isInteracting = true;
+      velY = direction * 0.35;
+      velX = pitch * 0.35;
+      angleY += direction;
+      angleX = Math.max(-0.85, Math.min(0.75, angleX + pitch));
+      group.rotation.y = angleY;
+      group.rotation.x = angleX;
+      group.rotation.z = Math.sin(angleY * 2) * angleX * 0.04;
+      disk.rotation.y = angleY * 0.25;
+      ring.rotation.z = angleY * 0.25;
+      canvas.dataset.angle = `${angleY.toFixed(3)},${angleX.toFixed(3)}`;
+      draw();
+      clearTimeout(interactTimeout);
+      interactTimeout = setTimeout(() => {
+        isInteracting = false;
+      }, 120);
+      if (!frame) {
+        frame = requestAnimationFrame(animate);
+      }
+    },
+    setAngle(yaw, pitch) {
+      isInteracting = false;
+      velY = 0;
+      velX = 0;
+      angleY = yaw;
+      angleX = Math.max(-0.85, Math.min(0.75, pitch));
+      group.rotation.y = angleY;
+      group.rotation.x = angleX;
+      group.rotation.z = Math.sin(angleY * 2) * angleX * 0.04;
+      disk.rotation.y = angleY * 0.25;
+      ring.rotation.z = angleY * 0.25;
+      canvas.dataset.angle = `${angleY.toFixed(3)},${angleX.toFixed(3)}`;
+      draw();
+    },
+    zoom(delta) {
+      targetCameraDist = Math.max(4.8, Math.min(9.5, targetCameraDist + delta));
+      cameraDist = targetCameraDist;
+      camera.position.z = cameraDist;
+      camera.position.y = 2.2 + angleX * 0.6;
+      camera.lookAt(0, 0.1, 0);
+      draw();
+    },
+    resetRotation() {
+      angleY = -0.42;
+      angleX = 0.22;
+      velY = 0;
+      velX = 0;
+      targetCameraDist = 6.8;
+      cameraDist = 6.8;
+      group.rotation.x = angleX;
+      group.rotation.y = angleY;
+      group.rotation.z = 0;
+      disk.rotation.y = angleY * 0.25;
+      ring.rotation.z = angleY * 0.25;
+      camera.position.z = cameraDist;
+      camera.position.y = 2.2 + angleX * 0.6;
+      camera.lookAt(0, 0.1, 0);
+      canvas.dataset.angle = `${angleY.toFixed(3)},${angleX.toFixed(3)}`;
       draw();
     },
     dispose() {
