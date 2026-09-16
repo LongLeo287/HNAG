@@ -26,6 +26,9 @@ export interface GameAudio {
   playCrateHover(): void;
   playCrateLid(style?: AudioOpeningStyle): void;
   playCrateOpen(style?: AudioOpeningStyle): void;
+  playAirRelease(): void;
+  playMechanicalClack(): void;
+  playSustainedShimmer(): void;
   playEquipCrate(): void;
   playUiHover(): void;
   playUiClick(): void;
@@ -183,6 +186,40 @@ export function createGameAudio(): GameAudio {
         // 3. Metallic lock chime harmonic
         playTone(920, now + 0.05, 0.15, ctx, { type: "sine", endFrequencyHz: 460, gain: 0.12 });
       }
+    },
+    playAirRelease() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      const now = ctx.currentTime;
+      // Multi-layered high-pressure air/steam release ("psssht")
+      playTone(3400, now, 0.32, ctx, { type: "sawtooth", endFrequencyHz: 420, gain: 0.16 });
+      playTone(1900, now + 0.03, 0.28, ctx, { type: "triangle", endFrequencyHz: 250, gain: 0.09 });
+    },
+    playMechanicalClack() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      const now = ctx.currentTime;
+      // Heavy mechanical spring unclamp clack + resonant solid metal container thud
+      playTone(2800, now, 0.038, ctx, { type: "square", endFrequencyHz: 520, gain: 0.34 });
+      playTone(120, now + 0.015, 0.22, ctx, { type: "triangle", endFrequencyHz: 38, gain: 0.38 });
+      playTone(950, now + 0.04, 0.12, ctx, { type: "sine", endFrequencyHz: 420, gain: 0.14 });
+    },
+    playSustainedShimmer() {
+      if (!enabled) return;
+      const ctx = ensureContext();
+      if (!ctx || ctx.state !== "running") return;
+      const now = ctx.currentTime;
+      // Angelic shimmering chimes cascade with long, crystalline reverberation
+      const shimmerNotes = [1320, 1760, 2200, 2640, 3520];
+      shimmerNotes.forEach((freq, idx) => {
+        playTone(freq, now + idx * 0.08, 1.4 - idx * 0.15, ctx, {
+          type: "sine",
+          endFrequencyHz: freq * 1.01,
+          gain: 0.07,
+        });
+      });
     },
     playEquipCrate() {
       if (!enabled) return;

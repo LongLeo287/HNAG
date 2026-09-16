@@ -59,6 +59,7 @@ export function CrateStage({
     [reducedMotion, frozenSelection],
   );
 
+
   useEffect(() => {
     if (phase !== "spinning" || !reducedMotion) return;
     const timeout = window.setTimeout(onLanded, spinProfile.durationMs);
@@ -68,11 +69,19 @@ export function CrateStage({
   useEffect(() => {
     if (phase === "revealed" && frozenSelection) {
       audio.playReveal(frozenSelection.winner.rarity, frozenSelection.winner.regionalSpecialty?.region);
+      if (
+        frozenSelection.winner.rarity === "HUYEN_THOAI" ||
+        Boolean(frozenSelection.winner.regionalSpecialty)
+      ) {
+        audio.playSustainedShimmer();
+      }
     }
   }, [phase, audio, frozenSelection]);
 
   const handleTick = useCallback(() => audio.playTick(), [audio]);
   const handleLid = useCallback(() => audio.playCrateLid(activeCrate.openingStyle), [audio, activeCrate.openingStyle]);
+  const handleAirRelease = useCallback(() => audio.playAirRelease(), [audio]);
+  const handleMechanicalClack = useCallback(() => audio.playMechanicalClack(), [audio]);
   const handleHover = useCallback(() => audio.playCrateHover(), [audio]);
   const handleInteract = useCallback(() => audio.recover(), [audio]);
 
@@ -114,6 +123,8 @@ export function CrateStage({
             caseReelDurationMs={spinProfile.durationMs}
             onTick={handleTick}
             onLid={handleLid}
+            onAirRelease={handleAirRelease}
+            onMechanicalClack={handleMechanicalClack}
             onLanded={onLanded}
           />
         )}

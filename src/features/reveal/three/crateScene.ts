@@ -195,24 +195,49 @@ export function createCrateScene(
   const core = box(group, 0, -0.35, 0, 2.12, 0.12, 1.35, trim);
 
   // Interior radiant PointLight
-  const interiorLight = new THREE.PointLight(accent, 0, 5);
+  const interiorLight = new THREE.PointLight(accent, 0, 7);
   interiorLight.position.set(0, -0.1, 0);
   group.add(interiorLight);
-  const beamGeometry = new THREE.CylinderGeometry(1.15, 0.65, 2.1, 24, 1, true);
+
+  // Majestic ascending radiant light beam pillar (vệt sáng phun trào)
+  const beamGeometry = new THREE.CylinderGeometry(1.4, 0.55, 3.8, 32, 1, true);
   geometries.add(beamGeometry);
-  const beamMaterial = new THREE.MeshBasicMaterial({ color: accent, transparent: true,
-    opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  const beamMaterial = new THREE.MeshBasicMaterial({
+    color: accent,
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
   materials.add(beamMaterial);
   const beam = new THREE.Mesh(beamGeometry, beamMaterial);
-  beam.position.y = 1.05;
+  beam.position.y = 1.9;
   beam.visible = false;
   group.add(beam);
 
-  // 3D Burst Particles for Desktop Tier
+  // Inner intense superheated core beam
+  const innerBeamGeo = new THREE.CylinderGeometry(0.7, 0.28, 4.2, 24, 1, true);
+  geometries.add(innerBeamGeo);
+  const innerBeamMaterial = new THREE.MeshBasicMaterial({
+    color: "#ffffff",
+    transparent: true,
+    opacity: 0,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  });
+  materials.add(innerBeamMaterial);
+  const innerBeam = new THREE.Mesh(innerBeamGeo, innerBeamMaterial);
+  innerBeam.position.y = 2.1;
+  innerBeam.visible = false;
+  group.add(innerBeam);
+
+  // 3D Erupting Particle Fountain (Three.js Particle Beam)
   let particlePoints: THREE.Points | undefined;
   let particlePositions: Float32Array | undefined;
   let particleVelocities: Float32Array | undefined;
-  const particleCount = isDesktop ? 80 : 24;
+  const particleCount = isDesktop ? 120 : 40;
 
   {
     const pGeo = new THREE.BufferGeometry();
@@ -220,18 +245,18 @@ export function createCrateScene(
     particlePositions = new Float32Array(particleCount * 3);
     particleVelocities = new Float32Array(particleCount * 3);
     for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 1.6;
-      particlePositions[i * 3 + 1] = -0.3 + Math.random() * 0.2;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 1.1;
+      particlePositions[i * 3] = (Math.random() - 0.5) * 1.2;
+      particlePositions[i * 3 + 1] = -0.3 + Math.random() * 0.4;
+      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 0.9;
 
-      particleVelocities[i * 3] = (Math.random() - 0.5) * 0.02;
-      particleVelocities[i * 3 + 1] = 0.015 + Math.random() * 0.035;
-      particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+      particleVelocities[i * 3] = (Math.random() - 0.5) * 0.035;
+      particleVelocities[i * 3 + 1] = 0.04 + Math.random() * 0.06;
+      particleVelocities[i * 3 + 2] = (Math.random() - 0.5) * 0.035;
     }
     pGeo.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
     const pMat = new THREE.PointsMaterial({
       color: accent,
-      size: 0.065,
+      size: isDesktop ? 0.08 : 0.065,
       transparent: true,
       opacity: 0,
       blending: THREE.AdditiveBlending,
@@ -353,112 +378,163 @@ export function createCrateScene(
 
       // Style-specific lid motion and lighting
       if (resolvedOpeningStyle === "overwatch") {
-        // OVERWATCH: Pneumatic pop — lid launches upward into the sky with 3D tumble, giant light pillar
+        // OVERWATCH: Pneumatic pop — lid launches skyward with 3D tumble, giant erupting particle beam
         if (pose === "opening") {
           const pop = Math.min(1, elapsed / 420);
-          hinge.position.y = 0.69 + pop * 2.2;
-          hinge.position.z = -0.85 - pop * 1.1;
-          hinge.rotation.x = -pop * 2.8;
-          hinge.rotation.z = Math.sin(elapsed * 0.015) * 0.4;
-          hinge.rotation.y = Math.sin(elapsed * 0.01) * 0.25;
+          hinge.position.y = 0.69 + pop * 2.8;
+          hinge.position.z = -0.85 - pop * 1.3;
+          hinge.rotation.x = -pop * 3.0;
+          hinge.rotation.z = Math.sin(elapsed * 0.018) * 0.45;
+          hinge.rotation.y = Math.sin(elapsed * 0.012) * 0.3;
 
           beam.visible = true;
-          beam.scale.set(1.35, 2.8, 1.35);
-          beamMaterial.opacity = Math.min(0.28, elapsed / 1800);
-          interiorLight.intensity = pop * (isDesktop ? 9.0 : 4.5);
+          beam.scale.set(1.4, 3.2, 1.4);
+          beamMaterial.opacity = Math.min(0.35, elapsed / 1200);
+          innerBeam.visible = true;
+          innerBeam.scale.set(1.1, 3.5, 1.1);
+          innerBeamMaterial.opacity = Math.min(0.55, elapsed / 1000);
+          interiorLight.intensity = pop * (isDesktop ? 12.0 : 6.0);
         } else if (pose === "revealed") {
-          hinge.position.set(0, 2.89, -1.95);
-          hinge.rotation.set(-2.8, 0.15, 0.25);
+          hinge.position.set(0, 3.49, -2.15);
+          hinge.rotation.set(-3.0, 0.2, 0.3);
 
           beam.visible = true;
-          beam.scale.set(1.35, 2.8, 1.35);
-          beamMaterial.opacity = 0.25;
-          interiorLight.intensity = isDesktop ? 8.0 : 4.0;
+          beam.scale.set(1.4, 3.2, 1.4);
+          beam.rotation.y += 0.01;
+          beamMaterial.opacity = 0.28 + Math.sin(now * 0.005) * 0.06;
+
+          innerBeam.visible = true;
+          innerBeam.scale.set(1.1, 3.5, 1.1);
+          innerBeam.rotation.y -= 0.015;
+          innerBeamMaterial.opacity = 0.45 + Math.sin(now * 0.008) * 0.12;
+
+          interiorLight.intensity = (isDesktop ? 10.0 : 5.0) + Math.sin(now * 0.006) * 1.5;
         } else {
           hinge.position.set(0, 0.69, -0.85);
           hinge.rotation.set(0, 0, 0);
           beam.visible = false;
           beam.scale.set(1, 1, 1);
           beamMaterial.opacity = 0;
+          innerBeam.visible = false;
+          innerBeam.scale.set(1, 1, 1);
+          innerBeamMaterial.opacity = 0;
           interiorLight.intensity = 0;
         }
       } else if (resolvedOpeningStyle === "apex") {
-        // APEX LEGENDS: Mechanical shell fracture — lid splits open backwards, high-energy laser column
+        // APEX LEGENDS: Mechanical shell fracture & energy geyser
         if (pose === "opening") {
           const fracture = Math.min(1, elapsed / 400);
-          hinge.position.y = 0.69 + fracture * 1.3;
-          hinge.position.z = -0.85 - fracture * 0.6;
-          hinge.rotation.x = -fracture * 2.4;
-          hinge.rotation.y = Math.sin(elapsed * 0.012) * 0.2;
+          hinge.position.y = 0.69 + fracture * 1.8;
+          hinge.position.z = -0.85 - fracture * 0.8;
+          hinge.rotation.x = -fracture * 2.6;
+          hinge.rotation.y = Math.sin(elapsed * 0.015) * 0.25;
 
           beam.visible = true;
-          beam.scale.set(0.9, 3.2, 0.9);
-          beamMaterial.opacity = Math.min(0.32, elapsed / 1600);
-          interiorLight.intensity = fracture * (isDesktop ? 10.0 : 5.0);
+          beam.scale.set(1.2, 3.6, 1.2);
+          beamMaterial.opacity = Math.min(0.4, elapsed / 1100);
+          innerBeam.visible = true;
+          innerBeam.scale.set(0.9, 3.9, 0.9);
+          innerBeamMaterial.opacity = Math.min(0.6, elapsed / 900);
+          interiorLight.intensity = fracture * (isDesktop ? 13.0 : 6.5);
         } else if (pose === "revealed") {
-          hinge.position.set(0, 1.99, -1.45);
-          hinge.rotation.set(-2.4, 0.15, 0);
+          hinge.position.set(0, 2.49, -1.65);
+          hinge.rotation.set(-2.6, 0.15, 0);
 
           beam.visible = true;
-          beam.scale.set(0.9, 3.2, 0.9);
-          beamMaterial.opacity = 0.3;
-          interiorLight.intensity = isDesktop ? 9.0 : 4.5;
+          beam.scale.set(1.2, 3.6, 1.2);
+          beam.rotation.y += 0.012;
+          beamMaterial.opacity = 0.32 + Math.sin(now * 0.006) * 0.07;
+
+          innerBeam.visible = true;
+          innerBeam.scale.set(0.9, 3.9, 0.9);
+          innerBeam.rotation.y -= 0.018;
+          innerBeamMaterial.opacity = 0.5 + Math.sin(now * 0.009) * 0.12;
+
+          interiorLight.intensity = (isDesktop ? 11.0 : 5.5) + Math.sin(now * 0.007) * 2;
         } else {
           hinge.position.set(0, 0.69, -0.85);
           hinge.rotation.set(0, 0, 0);
           beam.visible = false;
           beam.scale.set(1, 1, 1);
           beamMaterial.opacity = 0;
+          innerBeam.visible = false;
+          innerBeam.scale.set(1, 1, 1);
+          innerBeamMaterial.opacity = 0;
           interiorLight.intensity = 0;
         }
       } else {
-        // CS:GO: Industrial heavy tactical hinge rotation with rich golden glow
+        // CS:GO: Industrial heavy tactical latch pop & volcanic particle beam eruption
         if (pose === "opening") {
-          hinge.position.set(0, 0.69, -0.85);
-          hinge.rotation.set(-Math.min(1, elapsed / 450) * 1.9, 0, 0);
+          const pop = Math.min(1, elapsed / 400);
+          // Elastic spring pop recoil: lid snaps upward with mechanical clack overshoot then settles
+          const popBounce = Math.sin(pop * Math.PI) * 0.45;
+          hinge.position.set(0, 0.69 + popBounce, -0.85);
+          hinge.rotation.set(-pop * 2.2, 0, Math.sin(elapsed * 0.04) * 0.03 * (1 - pop));
 
           beam.visible = true;
-          beam.scale.set(1, 1, 1);
-          beamMaterial.opacity = Math.min(0.16, elapsed / 3000);
-          interiorLight.intensity = Math.min(1, elapsed / 450) * (isDesktop ? 7.5 : 3.5);
+          beam.scale.set(1.15, 3.2, 1.15);
+          beamMaterial.opacity = Math.min(0.3, elapsed / 1500);
+          innerBeam.visible = true;
+          innerBeam.scale.set(0.85, 3.6, 0.85);
+          innerBeamMaterial.opacity = Math.min(0.5, elapsed / 1200);
+          interiorLight.intensity = pop * (isDesktop ? 11.0 : 5.5);
         } else if (pose === "revealed") {
           hinge.position.set(0, 0.69, -0.85);
-          hinge.rotation.set(-1.9, 0, 0);
+          hinge.rotation.set(-2.2, 0, 0);
 
           beam.visible = true;
-          beam.scale.set(1, 1, 1);
-          beamMaterial.opacity = 0.16;
-          interiorLight.intensity = isDesktop ? 6.5 : 3.0;
+          beam.scale.set(1.15, 3.2, 1.15);
+          beam.rotation.y += 0.008;
+          beamMaterial.opacity = 0.25 + Math.sin(now * 0.005) * 0.05;
+
+          innerBeam.visible = true;
+          innerBeam.scale.set(0.85, 3.6, 0.85);
+          innerBeam.rotation.y -= 0.012;
+          innerBeamMaterial.opacity = 0.4 + Math.sin(now * 0.007) * 0.1;
+
+          interiorLight.intensity = (isDesktop ? 9.0 : 4.5) + Math.sin(now * 0.005) * 1.2;
         } else {
           hinge.position.set(0, 0.69, -0.85);
           hinge.rotation.set(0, 0, 0);
           beam.visible = false;
           beam.scale.set(1, 1, 1);
           beamMaterial.opacity = 0;
+          innerBeam.visible = false;
+          innerBeam.scale.set(1, 1, 1);
+          innerBeamMaterial.opacity = 0;
           interiorLight.intensity = 0;
         }
       }
       core.scale.y = pose === "revealed" ? 1.8 : 1;
 
-      // 3D particles animation
+      // 3D particles animation (Fountain eruption)
       if (particlePoints && particlePositions && particleVelocities) {
         const mat = particlePoints.material as THREE.PointsMaterial;
         if (pose === "opening" || pose === "revealed") {
-          mat.opacity = Math.min(0.9, mat.opacity + 0.04);
+          mat.opacity = Math.min(0.95, mat.opacity + 0.05);
           for (let i = 0; i < particleCount; i++) {
             const idxX = i * 3;
             const idxY = idxX + 1;
             const idxZ = idxX + 2;
             const vx = particleVelocities[idxX] ?? 0;
-            const vy = particleVelocities[idxY] ?? 0;
+            let vy = particleVelocities[idxY] ?? 0;
             const vz = particleVelocities[idxZ] ?? 0;
             const px = (particlePositions[idxX] ?? 0) + vx;
             let py = (particlePositions[idxY] ?? 0) + vy;
             const pz = (particlePositions[idxZ] ?? 0) + vz;
-            if (py > 2.0) py = -0.3;
-            particlePositions[idxX] = px;
+            // Gravity damping
+            vy = Math.max(0.015, vy - 0.0003);
+            particleVelocities[idxY] = vy;
+            if (py > 3.6) {
+              py = -0.25 + Math.random() * 0.2;
+              particleVelocities[idxY] = 0.04 + Math.random() * 0.06;
+              particlePositions[idxX] = (Math.random() - 0.5) * 0.9;
+              particlePositions[idxZ] = (Math.random() - 0.5) * 0.7;
+            } else {
+              particlePositions[idxX] = px;
+              particlePositions[idxZ] = pz;
+            }
             particlePositions[idxY] = py;
-            particlePositions[idxZ] = pz;
           }
           const posAttr = particlePoints.geometry.getAttribute("position");
           if (posAttr) posAttr.needsUpdate = true;
@@ -472,7 +548,7 @@ export function createCrateScene(
     if (
       pose === "shaking" ||
       (pose === "opening" && elapsed < 500) ||
-      (isDesktop && pose === "revealed") ||
+      pose === "revealed" ||
       isInteracting ||
       Math.abs(velY) > 0.0002 ||
       Math.abs(velX) > 0.0002
@@ -583,7 +659,7 @@ export function createCrateScene(
       raycaster.setFromCamera(new THREE.Vector2(
         (x - bounds.left) / bounds.width * 2 - 1,
         -(y - bounds.top) / bounds.height * 2 + 1), camera);
-      return raycaster.intersectObject(group, true).some(hit => hit.object instanceof THREE.Mesh && hit.object !== beam);
+      return raycaster.intersectObject(group, true).some(hit => hit.object instanceof THREE.Mesh && hit.object !== beam && hit.object !== innerBeam);
     },
     hover(active) {
       if (disposed || failed || pose !== "idle" || hovered === active) return;

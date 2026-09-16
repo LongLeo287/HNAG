@@ -10,6 +10,8 @@ interface BlindboxRevealProps {
   frozenSelection: FrozenSelection;
   onTick: () => void;
   onLid?: () => void;
+  onAirRelease?: () => void;
+  onMechanicalClack?: () => void;
   onLanded: () => void;
   crate?: CrateDefinition;
 }
@@ -48,7 +50,15 @@ const STYLE_BADGE: Record<string, { label: string; icon: string; badgeClass: str
   },
 };
 
-export function BlindboxReveal({ frozenSelection, onTick, onLid, onLanded, crate = CRATES[0]! }: BlindboxRevealProps) {
+export function BlindboxReveal({
+  frozenSelection,
+  onTick,
+  onLid,
+  onAirRelease,
+  onMechanicalClack,
+  onLanded,
+  crate = CRATES[0]!,
+}: BlindboxRevealProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const landedRef = useRef(false);
   const rarity = RARITY_STYLE[frozenSelection.winner.rarity];
@@ -61,7 +71,18 @@ export function BlindboxReveal({ frozenSelection, onTick, onLid, onLanded, crate
     for (let i = 0; i < 4; i += 1) {
       timers.push(window.setTimeout(() => onTick(), START_DELAY_MS + ((i + 1) * SHAKE_MS) / 4));
     }
-    timers.push(window.setTimeout(() => { setPhase("opening"); onLid?.(); }, START_DELAY_MS + SHAKE_MS));
+    // Pneumatic air pressure release ("psssht") right before lid pops
+    timers.push(
+      window.setTimeout(() => onAirRelease?.(), Math.max(0, START_DELAY_MS + SHAKE_MS - 260)),
+    );
+    // Mechanical latch clack & lid pop open
+    timers.push(
+      window.setTimeout(() => {
+        setPhase("opening");
+        onMechanicalClack?.();
+        onLid?.();
+      }, START_DELAY_MS + SHAKE_MS),
+    );
     timers.push(window.setTimeout(() => setPhase("revealed"), START_DELAY_MS + SHAKE_MS + LID_MS));
     timers.push(
       window.setTimeout(() => {
@@ -71,7 +92,7 @@ export function BlindboxReveal({ frozenSelection, onTick, onLid, onLanded, crate
       }, START_DELAY_MS + SHAKE_MS + LID_MS + POP_MS + 250),
     );
     return () => timers.forEach((t) => window.clearTimeout(t));
-  }, [onTick, onLid, onLanded]);
+  }, [onTick, onLid, onAirRelease, onMechanicalClack, onLanded]);
 
   return (
     <div
