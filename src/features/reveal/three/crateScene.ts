@@ -28,8 +28,16 @@ export function createCrateScene(
   accent: string,
   onFailure: () => void,
   tier: ResolvedCrateTier = "mobile",
+  openingStyle?: "csgo" | "overwatch" | "apex",
 ): CrateScene {
   const isDesktop = tier === "desktop";
+  const resolvedOpeningStyle: "csgo" | "overwatch" | "apex" =
+    openingStyle ??
+    (id === "crate_drinking" || id === "crate_alcohol"
+      ? "apex"
+      : id === "crate_food"
+        ? "csgo"
+        : "overwatch");
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("webgl2", { antialias: isDesktop, alpha: true });
   if (!context) throw new Error("WebGL2 unavailable");
@@ -310,34 +318,127 @@ export function createCrateScene(
 
       group.rotation.x = angleX + idleBobPitch;
       group.rotation.y = angleY;
-      group.rotation.z =
-        (pose === "shaking" ? Math.sin(elapsed * 0.035) * 0.04 : 0) +
-        Math.sin(angleY * 2) * angleX * 0.04;
-      group.position.y = (hovered ? 0.05 : 0) + idleFloatY;
+
+      // Style-specific shaking physics
+      if (pose === "shaking") {
+        if (resolvedOpeningStyle === "overwatch") {
+          // Overwatch pneumatic rapid flutter
+          group.rotation.z = Math.sin(elapsed * 0.055) * 0.045;
+          group.position.x = Math.sin(elapsed * 0.045) * 0.015;
+          group.position.y = (hovered ? 0.05 : 0) + idleFloatY + Math.sin(elapsed * 0.07) * 0.02;
+        } else if (resolvedOpeningStyle === "apex") {
+          // Apex tectonic core rumble
+          group.rotation.z = Math.sin(elapsed * 0.04) * 0.035;
+          group.position.x = Math.sin(elapsed * 0.03) * 0.025;
+          group.position.z = Math.cos(elapsed * 0.03) * 0.02;
+          group.position.y = (hovered ? 0.05 : 0) + idleFloatY;
+          interiorLight.intensity = (Math.sin(elapsed * 0.025) + 1) * 1.8;
+        } else {
+          // CS:GO tactical lock tremble
+          group.rotation.z = Math.sin(elapsed * 0.035) * 0.04;
+          group.position.x = Math.sin(elapsed * 0.035) * 0.012;
+          group.position.y = (hovered ? 0.05 : 0) + idleFloatY;
+        }
+      } else {
+        group.rotation.z = Math.sin(angleY * 2) * angleX * 0.04;
+        group.position.x = 0;
+        group.position.z = 0;
+        group.position.y = (hovered ? 0.05 : 0) + idleFloatY;
+      }
 
       disk.rotation.y = angleY * 0.25;
       ring.rotation.z = angleY * 0.25;
 
       canvas.dataset.angle = `${angleY.toFixed(3)},${angleX.toFixed(3)}`;
-      hinge.rotation.x =
-        pose === "opening"
-          ? -Math.min(1, elapsed / 450) * 1.9
-          : pose === "revealed"
-            ? -1.9
-            : 0;
-      core.scale.y = pose === "revealed" ? 1.8 : 1;
-      beam.visible = pose === "opening" || pose === "revealed";
-      beamMaterial.opacity = beam.visible ? Math.min(0.12, elapsed / 3500) : 0;
 
-      // Radiant interior light animation
-      if (pose === "opening") {
-        const factor = Math.min(1, elapsed / 450);
-        interiorLight.intensity = factor * (isDesktop ? 7.0 : 3.0);
-      } else if (pose === "revealed") {
-        interiorLight.intensity = isDesktop ? 6.0 : 2.5;
+      // Style-specific lid motion and lighting
+      if (resolvedOpeningStyle === "overwatch") {
+        // OVERWATCH: Pneumatic pop — lid launches upward into the sky with 3D tumble, giant light pillar
+        if (pose === "opening") {
+          const pop = Math.min(1, elapsed / 420);
+          hinge.position.y = 0.69 + pop * 2.2;
+          hinge.position.z = -0.85 - pop * 1.1;
+          hinge.rotation.x = -pop * 2.8;
+          hinge.rotation.z = Math.sin(elapsed * 0.015) * 0.4;
+          hinge.rotation.y = Math.sin(elapsed * 0.01) * 0.25;
+
+          beam.visible = true;
+          beam.scale.set(1.35, 2.8, 1.35);
+          beamMaterial.opacity = Math.min(0.28, elapsed / 1800);
+          interiorLight.intensity = pop * (isDesktop ? 9.0 : 4.5);
+        } else if (pose === "revealed") {
+          hinge.position.set(0, 2.89, -1.95);
+          hinge.rotation.set(-2.8, 0.15, 0.25);
+
+          beam.visible = true;
+          beam.scale.set(1.35, 2.8, 1.35);
+          beamMaterial.opacity = 0.25;
+          interiorLight.intensity = isDesktop ? 8.0 : 4.0;
+        } else {
+          hinge.position.set(0, 0.69, -0.85);
+          hinge.rotation.set(0, 0, 0);
+          beam.visible = false;
+          beam.scale.set(1, 1, 1);
+          beamMaterial.opacity = 0;
+          interiorLight.intensity = 0;
+        }
+      } else if (resolvedOpeningStyle === "apex") {
+        // APEX LEGENDS: Mechanical shell fracture — lid splits open backwards, high-energy laser column
+        if (pose === "opening") {
+          const fracture = Math.min(1, elapsed / 400);
+          hinge.position.y = 0.69 + fracture * 1.3;
+          hinge.position.z = -0.85 - fracture * 0.6;
+          hinge.rotation.x = -fracture * 2.4;
+          hinge.rotation.y = Math.sin(elapsed * 0.012) * 0.2;
+
+          beam.visible = true;
+          beam.scale.set(0.9, 3.2, 0.9);
+          beamMaterial.opacity = Math.min(0.32, elapsed / 1600);
+          interiorLight.intensity = fracture * (isDesktop ? 10.0 : 5.0);
+        } else if (pose === "revealed") {
+          hinge.position.set(0, 1.99, -1.45);
+          hinge.rotation.set(-2.4, 0.15, 0);
+
+          beam.visible = true;
+          beam.scale.set(0.9, 3.2, 0.9);
+          beamMaterial.opacity = 0.3;
+          interiorLight.intensity = isDesktop ? 9.0 : 4.5;
+        } else {
+          hinge.position.set(0, 0.69, -0.85);
+          hinge.rotation.set(0, 0, 0);
+          beam.visible = false;
+          beam.scale.set(1, 1, 1);
+          beamMaterial.opacity = 0;
+          interiorLight.intensity = 0;
+        }
       } else {
-        interiorLight.intensity = 0;
+        // CS:GO: Industrial heavy tactical hinge rotation with rich golden glow
+        if (pose === "opening") {
+          hinge.position.set(0, 0.69, -0.85);
+          hinge.rotation.set(-Math.min(1, elapsed / 450) * 1.9, 0, 0);
+
+          beam.visible = true;
+          beam.scale.set(1, 1, 1);
+          beamMaterial.opacity = Math.min(0.16, elapsed / 3000);
+          interiorLight.intensity = Math.min(1, elapsed / 450) * (isDesktop ? 7.5 : 3.5);
+        } else if (pose === "revealed") {
+          hinge.position.set(0, 0.69, -0.85);
+          hinge.rotation.set(-1.9, 0, 0);
+
+          beam.visible = true;
+          beam.scale.set(1, 1, 1);
+          beamMaterial.opacity = 0.16;
+          interiorLight.intensity = isDesktop ? 6.5 : 3.0;
+        } else {
+          hinge.position.set(0, 0.69, -0.85);
+          hinge.rotation.set(0, 0, 0);
+          beam.visible = false;
+          beam.scale.set(1, 1, 1);
+          beamMaterial.opacity = 0;
+          interiorLight.intensity = 0;
+        }
       }
+      core.scale.y = pose === "revealed" ? 1.8 : 1;
 
       // 3D particles animation
       if (particlePoints && particlePositions && particleVelocities) {

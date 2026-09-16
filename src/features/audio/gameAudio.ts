@@ -17,13 +17,15 @@ type SpecialtyRegion = NonNullable<CandidateItem["regionalSpecialty"]>["region"]
  * resource is used; only the oscillator graph below produces sound.
  */
 
+export type AudioOpeningStyle = "csgo" | "overwatch" | "apex";
+
 export interface GameAudio {
   preload(): void;
   /** Unlock only from pointer-down, click, or keyboard activation; never from hover (DS-024). */
   recover(): void;
   playCrateHover(): void;
-  playCrateLid(): void;
-  playCrateOpen(): void;
+  playCrateLid(style?: AudioOpeningStyle): void;
+  playCrateOpen(style?: AudioOpeningStyle): void;
   playEquipCrate(): void;
   playUiHover(): void;
   playUiClick(): void;
@@ -137,26 +139,50 @@ export function createGameAudio(): GameAudio {
       lastCrateHoverAt = now;
       playTone(880, now, 0.08, context, { endFrequencyHz: 1100, gain: 0.035 });
     },
-    playCrateLid() {
+    playCrateLid(style: AudioOpeningStyle = "csgo") {
       if (!enabled) return;
       const ctx = ensureContext();
       if (!ctx || ctx.state !== "running") return;
       const now = ctx.currentTime;
-      // Original hinge lift and soft airy overtone, separate from the latch snap.
-      playTone(150, now, 0.24, ctx, { type: "triangle", endFrequencyHz: 420, gain: 0.12 });
-      playTone(600, now + 0.025, 0.2, ctx, { type: "sine", endFrequencyHz: 1500, gain: 0.045 });
+      if (style === "overwatch") {
+        // Overwatch pneumatic air release / steam pop
+        playTone(2800, now, 0.22, ctx, { type: "sawtooth", endFrequencyHz: 350, gain: 0.12 });
+        playTone(180, now + 0.05, 0.26, ctx, { type: "triangle", endFrequencyHz: 650, gain: 0.2 });
+        playTone(880, now + 0.12, 0.2, ctx, { type: "sine", endFrequencyHz: 1320, gain: 0.08 });
+      } else if (style === "apex") {
+        // Apex high-energy charge whine + mechanical core fracture
+        playTone(260, now, 0.18, ctx, { type: "sawtooth", endFrequencyHz: 1600, gain: 0.15 });
+        playTone(90, now + 0.08, 0.32, ctx, { type: "triangle", endFrequencyHz: 35, gain: 0.35 });
+        playTone(1200, now + 0.15, 0.18, ctx, { type: "square", endFrequencyHz: 400, gain: 0.1 });
+      } else {
+        // CS:GO tactical hinge lift and soft airy overtone
+        playTone(150, now, 0.24, ctx, { type: "triangle", endFrequencyHz: 420, gain: 0.12 });
+        playTone(600, now + 0.025, 0.2, ctx, { type: "sine", endFrequencyHz: 1500, gain: 0.045 });
+      }
     },
-    playCrateOpen() {
+    playCrateOpen(style: AudioOpeningStyle = "csgo") {
       if (!enabled) return;
       const ctx = ensureContext();
       if (!ctx || ctx.state !== "running") return;
       const now = ctx.currentTime;
-      // 1. Sharp metallic latch click (key/latch snap)
-      playTone(2400, now, 0.04, ctx, { type: "square", endFrequencyHz: 750, gain: 0.3 });
-      // 2. Heavy mechanical container unlatch thud (low resonant body)
-      playTone(130, now + 0.02, 0.22, ctx, { type: "triangle", endFrequencyHz: 45, gain: 0.38 });
-      // 3. Metallic lock chime harmonic
-      playTone(920, now + 0.05, 0.15, ctx, { type: "sine", endFrequencyHz: 460, gain: 0.12 });
+      if (style === "overwatch") {
+        // Overwatch futuristic pneumatic hiss & latch release
+        playTone(2600, now, 0.05, ctx, { type: "square", endFrequencyHz: 900, gain: 0.22 });
+        playTone(160, now + 0.02, 0.18, ctx, { type: "triangle", endFrequencyHz: 60, gain: 0.3 });
+        playTone(1100, now + 0.04, 0.2, ctx, { type: "sine", endFrequencyHz: 600, gain: 0.14 });
+      } else if (style === "apex") {
+        // Apex core discharge & mechanical lock unlock
+        playTone(2100, now, 0.06, ctx, { type: "sawtooth", endFrequencyHz: 500, gain: 0.28 });
+        playTone(110, now + 0.03, 0.25, ctx, { type: "triangle", endFrequencyHz: 38, gain: 0.42 });
+        playTone(850, now + 0.06, 0.18, ctx, { type: "square", endFrequencyHz: 320, gain: 0.15 });
+      } else {
+        // 1. Sharp metallic latch click (key/latch snap)
+        playTone(2400, now, 0.04, ctx, { type: "square", endFrequencyHz: 750, gain: 0.3 });
+        // 2. Heavy mechanical container unlatch thud (low resonant body)
+        playTone(130, now + 0.02, 0.22, ctx, { type: "triangle", endFrequencyHz: 45, gain: 0.38 });
+        // 3. Metallic lock chime harmonic
+        playTone(920, now + 0.05, 0.15, ctx, { type: "sine", endFrequencyHz: 460, gain: 0.12 });
+      }
     },
     playEquipCrate() {
       if (!enabled) return;

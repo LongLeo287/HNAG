@@ -118,7 +118,7 @@ export function ThreeCrate({ crate, pose = "idle", tier, onOpen, onHover, onInte
       instance?.dispose();
       scene.current = null;
     };
-  }, [crate.id, crate.theme.primaryHex, activeTier, reducedMotion]);
+  }, [crate.id, crate.theme.primaryHex, crate.openingStyle, activeTier, reducedMotion]);
 
   return (
     <div

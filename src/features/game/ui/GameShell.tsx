@@ -180,13 +180,13 @@ export function GameShell() {
 
   function handleOpen() {
     audio.recover(); // first-gesture unlock, per DS-024.
-    audio.playCrateOpen();
+    audio.playCrateOpen(currentCrate.openingStyle);
     open(currentEligiblePool);
   }
 
   function handleRespin() {
     audio.recover();
-    audio.playCrateOpen();
+    audio.playCrateOpen(currentCrate.openingStyle);
     respin(currentEligiblePool);
   }
 

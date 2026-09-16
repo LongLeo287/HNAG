@@ -25,7 +25,7 @@ export function CaseReel({ frozenSelection, decoyPool, durationMs, onTick, onLan
     [frozenSelection, decoyPool],
   );
 
-  const { translateXPx, start } = useCaseReelAnimation({ containerRef, cardRef, onTick, onLanded });
+  const { translateXPx, isLanded, tickCount, start } = useCaseReelAnimation({ containerRef, cardRef, onTick, onLanded });
 
   useEffect(() => {
     // No "only once" ref guard here on purpose: React 18/19 StrictMode (dev only) mounts this
@@ -47,7 +47,7 @@ export function CaseReel({ frozenSelection, decoyPool, durationMs, onTick, onLan
       aria-live="polite"
       aria-label="Đang quay chọn món"
     >
-      <SelectorLine />
+      <SelectorLine tickTrigger={tickCount} isLanded={isLanded} />
       <div
         className="absolute top-2 left-0 flex gap-3 will-change-transform"
         style={{ transform: `translate3d(${translateXPx}px, 0, 0)` }}

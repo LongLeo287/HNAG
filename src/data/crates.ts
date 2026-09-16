@@ -21,6 +21,8 @@ export interface CrateTheme {
   lidRayClass: string;
 }
 
+export type CrateOpeningStyle = "csgo" | "overwatch" | "apex";
+
 export interface CrateDefinition {
   id: CrateId;
   name: string;
@@ -30,6 +32,7 @@ export interface CrateDefinition {
   description: string;
   icon: string;
   imageSrc: string;
+  openingStyle: CrateOpeningStyle;
   theme: CrateTheme;
   filter: {
     kind: ItemKind;
@@ -48,6 +51,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     description: "Tuyển tập món chính đậm đà chuẩn vị bữa sáng & trưa Việt Nam",
     icon: "🍱",
     imageSrc: "/images/crates/food.png",
+    openingStyle: "csgo",
     theme: {
       primaryHex: "#F59E0B",
       glowClass: "shadow-[0_0_25px_rgba(245,158,11,0.35)]",
@@ -75,6 +79,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     description: "Giải nhiệt sảng khoái tức thì cùng các loại trà, cà phê và đá xay đỉnh cao",
     icon: "🧋",
     imageSrc: "/images/crates/drink.png",
+    openingStyle: "overwatch",
     theme: {
       primaryHex: "#06B6D4",
       glowClass: "shadow-[0_0_25px_rgba(6,182,212,0.35)]",
@@ -102,6 +107,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     description: "Thiên đường ăn vặt đường phố giòn ngon, cuốn hút từng miếng",
     icon: "🍢",
     imageSrc: "/images/crates/snack.png",
+    openingStyle: "overwatch",
     theme: {
       primaryHex: "#D946EF",
       glowClass: "shadow-[0_0_25px_rgba(217,70,239,0.35)]",
@@ -129,6 +135,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     description: "Chiến hữu tụ tập lai rai với lẩu thái chua cay, mực nướng sa tế và ốc nóng hổi",
     icon: "🍻",
     imageSrc: "/images/crates/drinking.png",
+    openingStyle: "apex",
     theme: {
       primaryHex: "#EF4444",
       glowClass: "shadow-[0_0_25px_rgba(239,68,68,0.35)]",
@@ -156,6 +163,7 @@ const BASE_CRATES: readonly CrateDefinition[] = [
     description: "Danh sách món có thể chọn phiên bản chay; hãy xác nhận thành phần khi gọi món",
     icon: "🥗",
     imageSrc: "/images/crates/veg.png",
+    openingStyle: "overwatch",
     theme: {
       primaryHex: "#10B981",
       glowClass: "shadow-[0_0_25px_rgba(16,185,129,0.35)]",
@@ -182,6 +190,7 @@ export const CRATES: readonly CrateDefinition[] = [...BASE_CRATES, {
   ...refreshmentCrate,
   id: "crate_alcohol", name: "Hòm Đồ Uống Có Cồn", shortName: "Có Cồn",
   codeName: "CASE // DRINK-06", icon: "🍷",
+  openingStyle: "apex",
   tagline: "Rượu, bia và cocktail — chọn riêng",
   description: "Nhóm đồ uống có cồn, tách khỏi hòm giải khát và các hòm món ăn",
   filter: { kind: "DRINK", categoryIds: ["co-con"], vegetarianOnly: false },

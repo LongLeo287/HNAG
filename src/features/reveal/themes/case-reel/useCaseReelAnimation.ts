@@ -13,6 +13,8 @@ interface UseCaseReelAnimationArgs {
 interface CaseReelAnimationApi {
   translateXPx: number;
   isSpinning: boolean;
+  isLanded: boolean;
+  tickCount: number;
   start: (durationMs: number) => void;
 }
 
@@ -30,6 +32,8 @@ export function useCaseReelAnimation({
 }: UseCaseReelAnimationArgs): CaseReelAnimationApi {
   const [translateXPx, setTranslateXPx] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isLanded, setIsLanded] = useState(false);
+  const [tickCount, setTickCount] = useState(0);
   const frameRef = useRef<number | undefined>(undefined);
   const lastCrossedIndexRef = useRef<number>(0);
 
@@ -64,12 +68,14 @@ export function useCaseReelAnimation({
         const index = currentSlotIndex(geometry, nextX);
         if (index !== lastCrossedIndexRef.current && index <= WINNER_SLOT_INDEX) {
           lastCrossedIndexRef.current = index;
+          setTickCount((prev) => prev + 1);
           onTick();
         }
 
         if (rawProgress >= 1) {
           setTranslateXPx(targetX); // snap — float accumulation must never leave the winner off-center
           setIsSpinning(false);
+          setIsLanded(true);
           onLanded();
           return;
         }
@@ -81,5 +87,5 @@ export function useCaseReelAnimation({
     [measureGeometry, onLanded, onTick],
   );
 
-  return { translateXPx, isSpinning, start };
+  return { translateXPx, isSpinning, isLanded, tickCount, start };
 }

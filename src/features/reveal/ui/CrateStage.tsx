@@ -72,7 +72,7 @@ export function CrateStage({
   }, [phase, audio, frozenSelection]);
 
   const handleTick = useCallback(() => audio.playTick(), [audio]);
-  const handleLid = useCallback(() => audio.playCrateLid(), [audio]);
+  const handleLid = useCallback(() => audio.playCrateLid(activeCrate.openingStyle), [audio, activeCrate.openingStyle]);
   const handleHover = useCallback(() => audio.playCrateHover(), [audio]);
   const handleInteract = useCallback(() => audio.recover(), [audio]);
 

@@ -34,11 +34,25 @@ export function currentSlotIndex(geometry: ReelGeometry, translateXPx: number): 
  * RANK-022: build the visual strip. Only WINNER_SLOT_INDEX carries meaning; every other
  * slot is a cosmetic decoy sampled from the frozen probabilities using Math.random() —
  * this function never selects or influences the winner (CODE-019).
+ * Upgraded with CS:GO signature "Near-Miss" suspense positioning.
  */
 export function buildReelSlots(winner: CandidateItem, decoyPool: CandidateItem[], probabilities: number[] = []): CandidateItem[] {
   const pool = decoyPool.length > 0 ? decoyPool : [winner];
+
+  // CS:GO near-miss suspense: place an epic/legendary/specialty card immediately adjacent to winner
+  const nearMissCandidates = pool.filter(
+    (item) =>
+      item.id !== winner.id &&
+      (item.rarity === "HUYEN_THOAI" || item.rarity === "DINH" || Boolean(item.regionalSpecialty)),
+  );
+  const nearMissItem =
+    nearMissCandidates.length > 0
+      ? nearMissCandidates[Math.floor(Math.random() * nearMissCandidates.length)]
+      : undefined;
+
   return Array.from({ length: REEL_LENGTH }, (_, index) => {
     if (index === WINNER_SLOT_INDEX) return winner;
+    if (index === WINNER_SLOT_INDEX - 1 && nearMissItem) return nearMissItem;
     const decoy = sampleDecoy(pool, probabilities);
     return decoy ?? winner;
   });
